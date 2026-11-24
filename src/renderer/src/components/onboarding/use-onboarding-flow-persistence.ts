@@ -13,8 +13,16 @@ import type { OnboardingState } from '../../../../shared/onboarding/onboarding-s
 import type { TuiAgent } from '../../../../shared/agent-launch/catalog/tui-agent'
 import { applyAllAgentsPermission } from '../../../../shared/agent-launch/permissions/tui-agent-permission-choice'
 import type { AgentChatPermissionMode } from '../../../../shared/agent-launch/permissions/agent-chat-permission-mode'
-import type { AgentSurface, StepId, StepNumber } from './use-onboarding-flow-types'
-import { agentSurfaceSettingsUpdate } from './onboarding-flow-state'
+import type {
+  AgentSurface,
+  OnboardingUseCase,
+  StepId,
+  StepNumber
+} from './use-onboarding-flow-types'
+import {
+  agentSurfaceSettingsUpdate,
+  applyOnboardingUseCaseSelection
+} from './onboarding-flow-state'
 
 export async function persistStep(
   stepNumber: number,
@@ -151,6 +159,7 @@ export function useCloseWith({ onOnboardingChange, startTimeRef, setError }: Clo
 
 type PersistCurrentStepDeps = {
   currentStepId: StepId
+  useCase: OnboardingUseCase
   agentSurface: AgentSurface
   selectedAgent: TuiAgent | null
   agentInteractedRef: { current: boolean }
@@ -171,6 +180,7 @@ export type PersistCurrentStepResult = {
 
 export function usePersistCurrentStep({
   currentStepId,
+  useCase,
   agentSurface,
   selectedAgent,
   agentInteractedRef,
@@ -188,8 +198,25 @@ export function usePersistCurrentStep({
       return { ok: false }
     }
     try {
+      if (currentStepId === 'use_case') {
+        await applyOnboardingUseCaseSelection(useCase, settings, updateSettings)
+        if (useCase === 'everyday') {
+          // Everyday work skips the coding-agent subpages, so step 1 completes here.
+          onOnboardingChange(await persistStep(1))
+        }
+        return { ok: true }
+      }
       if (currentStepId === 'agent_surface') {
         // Why: the Chat UI choice saves with the default agent, so leaving mid-step changes nothing.
+        return { ok: true }
+      }
+      if (currentStepId === 'notifications' && useCase === 'everyday') {
+        await updateSettings({
+          ...agentSurfaceSettingsUpdate(settings, 'chat'),
+          notifications: buildCompletedOnboardingNotificationSettings(settings.notifications)
+        })
+        onOnboardingChange(await persistStep(ONBOARDING_FINAL_STEP))
+        useAppStore.getState().recordFeatureInteraction('notifications')
         return { ok: true }
       }
       if (currentStepId === 'agent' || currentStepId === 'notifications') {
@@ -265,6 +292,7 @@ export function usePersistCurrentStep({
     settings,
     theme,
     updateSettings,
+    useCase,
     yoloPermissions,
     yoloPermissionsChosen,
     setError

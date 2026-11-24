@@ -18,7 +18,6 @@ import { cn } from '@/lib/class-names'
 import { useAppStore } from '@/store'
 import { hasCustomTitleBar, hasMacTrafficLights } from '@/app-shell/chrome/app-window-chrome'
 import type { AppChromeLayout } from '@/app-shell/chrome/use-app-chrome-layout'
-import { AppModeSwitcher } from '@/app-shell/simple-mode/AppModeSwitcher'
 import type { Bot } from '../../../../shared/bot-types'
 import { showOnboardingFromRenderer } from '../onboarding/show-onboarding-event'
 import { openBotTemplates } from '../bots/templates/bot-templates-open'
@@ -105,7 +104,6 @@ export function SimpleBotsSidebar({
             {toggleSidebarLabel}
           </TooltipContent>
         </Tooltip>
-        <AppModeSwitcher className="ml-1.5" />
       </div>
 
       <div className="space-y-2 px-2.5 pt-1 pb-2">

@@ -2,7 +2,6 @@ import type React from 'react'
 import { Loader2, Plus } from 'lucide-react'
 import { hasCustomTitleBar, hasMacTrafficLights } from '@/app-shell/chrome/app-window-chrome'
 import type { AppChromeLayout } from '@/app-shell/chrome/use-app-chrome-layout'
-import { AppModeSwitcher } from '@/app-shell/simple-mode/AppModeSwitcher'
 import { SidebarToggleIcon } from '@/components/icons/SidebarToggleIcon'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
@@ -78,7 +77,6 @@ export function SimpleBotsHeader({
                 {openSidebarLabel}
               </TooltipContent>
             </Tooltip>
-            <AppModeSwitcher className="ml-1.5" />
           </div>
         ) : null}
 

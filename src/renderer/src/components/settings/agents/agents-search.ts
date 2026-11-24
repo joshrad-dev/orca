@@ -104,6 +104,9 @@ const AGENT_CHAT_CHOICE_SEARCH_ENTRY_ID = 'agent-chat-choice'
 /** The Installed list, where each chat agent's row holds its Chat | CLI choice. */
 export const AGENTS_INSTALLED_SECTION_ID = 'agents-installed'
 
+/** The top Bots / Code mode toggle in Settings > Agents. */
+export const AGENT_WORKSPACE_MODE_SECTION_ID = 'agents-workspace-mode'
+
 /** The top Chat or Terminal tiles that set this computer's default. */
 export const AGENT_DEFAULT_SURFACE_SECTION_ID = 'agents-default-surface'
 export const AGENT_PERMISSIONS_SECTION_ID = 'agents-permissions'
@@ -151,6 +154,19 @@ const getAllAgentsPaneSearchEntries = createLocalizedCatalog(() => [
         'installed agents in wsl'
       ),
       ...translateSearchKeyword('auto.components.settings.agents.search.719f53350c', 'path')
+    ]
+  },
+  {
+    targetSectionId: AGENT_WORKSPACE_MODE_SECTION_ID,
+    title: translate('simpleBots.mode.label', 'Workspace mode'),
+    description: translate(
+      'simpleBots.mode.description',
+      'Choose whether Orca centers on Bots for everyday work or the full Code workspace.'
+    ),
+    keywords: [
+      ...translateSearchKeyword('simpleBots.mode.bots', 'Bots'),
+      ...translateSearchKeyword('simpleBots.mode.code', 'Code'),
+      ...translateSearchKeyword('components.onboarding.useCase.everyday.label', 'Everyday work')
     ]
   },
   {

@@ -20816,6 +20816,7 @@
     "onboarding": {
       "flow": {
         "stepTooltip": {
+          "useCase": "Use case",
           "agent": "Default Agent",
           "theme": "Appearance",
           "windowsTerminal": "Windows Terminal",
@@ -20826,7 +20827,15 @@
         "actions": {
           "addFirstProject": "Add your first project",
           "continue": "Continue",
+          "getStarted": "Get started",
           "openingAddProject": "Opening Add Project..."
+        },
+        "useCase": {
+          "title": "What do you want to use Orca for?",
+          "subtitle": "You can always change this later."
+        },
+        "notificationsEveryday": {
+          "subtitle": "Orca will notify you when bots finish a task or need your reply."
         },
         "agentSurface": {
           "title": "How do you want to work with agents?",
@@ -20907,6 +20916,27 @@
         "terminalTipCaption": "Click <em>+</em> in the tab bar, then pick an agent marked <em>(CLI)</em>. If a chat agent's CLI is installed, hover its row and click the terminal icon to use the CLI.",
         "chatTip": "Want chat too? Turn it on any time in <em>Settings → Chat UI</em>.",
         "turnOnChat": "Turn on now"
+      },
+      "useCase": {
+        "everyday": {
+          "label": "Everyday work",
+          "description": "Keep bots front and center for everyday tasks, reminders, and files."
+        },
+        "code": {
+          "label": "Code",
+          "description": "Work across repositories, branches, diffs, and coding agents in a full workspace."
+        },
+        "switchNote": "Switch between <em>Bots</em> and <em>Code</em> any time in <em>Settings → Agents</em>.",
+        "preview": {
+          "botsHeading": "Bots",
+          "dailyBriefBot": "Daily Brief",
+          "researchBot": "Research",
+          "writingBot": "Writing",
+          "userMessage": "Summarize today's notes",
+          "botMessage": "Here are the 3 action items from your meeting. Draft saved to Files.",
+          "outputFile": "meeting-summary.md",
+          "composerPlaceholder": "Message Daily Brief…"
+        }
       },
       "agentSurface": {
         "chat": {
@@ -30907,7 +30937,8 @@
     "mode": {
       "bots": "Bots",
       "code": "Code",
-      "label": "Workspace mode"
+      "label": "Workspace mode",
+      "description": "Choose whether Orca centers on Bots for everyday work or the full Code workspace."
     },
     "chat": {
       "home": "Home",

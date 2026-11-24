@@ -9,7 +9,8 @@ import type { EventProps } from '../../../../shared/telemetry/telemetry-event-cl
 import type { GlobalSettings } from '../../../../shared/settings/global-settings-types'
 import type { OnboardingState } from '../../../../shared/onboarding/onboarding-state-types'
 import type { TuiAgent } from '../../../../shared/agent-launch/catalog/tui-agent'
-import { STEPS, type AgentSurface } from './use-onboarding-flow-types'
+import { setAppShellMode } from '@/app-shell/simple-mode/app-shell-mode-store'
+import { STEPS, type AgentSurface, type OnboardingUseCase } from './use-onboarding-flow-types'
 import type { ThemeLookSettings } from './onboarding-theme-look-settings'
 
 type TaskSourcesSnapshotProps = EventProps<'onboarding_task_sources_snapshot'>
@@ -26,6 +27,7 @@ export function shouldSkipWindowsTerminalStep(isWindows: boolean): boolean {
 }
 
 export type OnboardingStepSkipOptions = {
+  skipCodeSteps: boolean
   skipIntegrations: boolean
   skipWindowsTerminal: boolean
 }
@@ -33,6 +35,11 @@ export type OnboardingStepSkipOptions = {
 export function isSkippedStepIndex(index: number, options: OnboardingStepSkipOptions): boolean {
   const step = STEPS[index]
   return (
+    (options.skipCodeSteps &&
+      (step?.id === 'agent_surface' ||
+        step?.id === 'agent' ||
+        step?.id === 'integrations' ||
+        step?.id === 'windows_terminal')) ||
     (options.skipIntegrations && step?.id === 'integrations') ||
     (options.skipWindowsTerminal && step?.id === 'windows_terminal')
   )
@@ -131,8 +138,24 @@ export function agentSurfaceSettingsUpdate(
   return (settings?.agentDefaultSurface === 'chat') === chat ? {} : { agentDefaultSurface: surface }
 }
 
+/** Switch app shell mode for the chosen onboarding use case; Everyday work also enables Chat UI by default. */
+export async function applyOnboardingUseCaseSelection(
+  useCase: OnboardingUseCase,
+  settings: Pick<GlobalSettings, 'agentDefaultSurface'> | null,
+  updateSettings: (updates: Partial<GlobalSettings>) => Promise<void> | void
+): Promise<void> {
+  setAppShellMode(useCase === 'everyday' ? 'simple' : 'ide')
+  if (useCase === 'everyday') {
+    const chatUpdate = agentSurfaceSettingsUpdate(settings, 'chat')
+    if (Object.keys(chatUpdate).length > 0) {
+      await updateSettings(chatUpdate)
+    }
+  }
+}
+
 type SkippedOnboardingPreferenceOptions = {
   currentStepId: OnboardingStepId
+  useCase: OnboardingUseCase
   /** Look settings as the theme step found them; null before it was reached. */
   lookBeforePreview: ThemeLookSettings | null
   settingsTheme: GlobalSettings['theme'] | undefined
@@ -147,6 +170,7 @@ type SkippedOnboardingPreferenceOptions = {
 
 export async function prepareSkippedOnboardingPreferences({
   currentStepId,
+  useCase,
   lookBeforePreview,
   settingsTheme,
   selectedAgent,
@@ -158,6 +182,9 @@ export async function prepareSkippedOnboardingPreferences({
   setError
 }: SkippedOnboardingPreferenceOptions): Promise<boolean> {
   try {
+    if (currentStepId === 'use_case') {
+      await applyOnboardingUseCaseSelection(useCase, settings, updateSettings)
+    }
     // Why: theme tiles save immediately for a stable preview, but skip must not keep this step's choice.
     if (currentStepId === 'theme') {
       const themeToRestore = lookBeforePreview?.theme ?? settingsTheme
@@ -189,5 +216,23 @@ export async function prepareSkippedOnboardingPreferences({
       { description: message }
     )
     return false
+  }
+}
+
+export async function persistSkippedStepProgress(
+  stepNumber: number,
+  persist: (step: number) => Promise<OnboardingState>,
+  onOnboardingChange: (state: OnboardingState) => void
+): Promise<void> {
+  try {
+    onOnboardingChange(await persist(stepNumber))
+  } catch (err) {
+    toast.error(
+      translate(
+        'auto.components.onboarding.use.onboarding.flow.52acfbef51',
+        'Could not save progress'
+      ),
+      { description: err instanceof Error ? err.message : String(err) }
+    )
   }
 }

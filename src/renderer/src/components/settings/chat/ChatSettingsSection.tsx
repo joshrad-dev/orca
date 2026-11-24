@@ -1,4 +1,5 @@
 import { useTranslate } from '@/i18n/use-translate'
+import { useAppShellMode } from '@/app-shell/simple-mode/app-shell-mode-store'
 import { AppearanceChatSection } from '../appearance/chat/AppearanceChatSection'
 import { ChatBehaviorSetting } from './ChatBehaviorSetting'
 import { ChatNamingSetting } from './ChatNamingSetting'
@@ -48,8 +49,11 @@ export function ChatSettingsSection({
   isMounted: boolean
 }): React.JSX.Element {
   const t = useTranslate()
+  const isSimpleMode = useAppShellMode() === 'simple'
   const query = useAppStore((state) => state.settingsSearchQuery)
-  const title = t('settings.appearance.chat.title', 'Chat UI')
+  const title = isSimpleMode
+    ? t('simpleBots.chat.fallbackTitle', 'Chat')
+    : t('settings.appearance.chat.title', 'Chat UI')
   const appearanceTitle = t('auto.components.settings.Settings.2b4474780a', 'Appearance')
   const launchEntries = getChatLaunchEntriesByKey(t)
   const showAllBehavior = matchesSettingsSearch(query, [
@@ -66,7 +70,7 @@ export function ChatSettingsSection({
     >
       {isMounted ? (
         <>
-          {showDesktopOnlySettings ? (
+          {showDesktopOnlySettings && !isSimpleMode ? (
             <>
               <SearchableSetting
                 {...launchEntries.default}
@@ -93,6 +97,7 @@ export function ChatSettingsSection({
                 updateSettings={updateSettings}
                 fontSuggestions={fontSuggestions}
                 onRequestFontSuggestions={onRequestFontSuggestions}
+                simpleMode={isSimpleMode}
                 forceVisiblePrimary={matchesSettingsSearch(query, [
                   { title },
                   { title: appearanceTitle }
@@ -100,14 +105,16 @@ export function ChatSettingsSection({
               />
             </SettingsGroup>
           ) : null}
-          <ChatTurnActivitySetting
-            settings={settings}
-            updateSettings={updateSettings}
-            forceVisible={matchesSettingsSearch(query, [
-              { title },
-              { title: getChatTurnActivityTitle(t) }
-            ])}
-          />
+          {!isSimpleMode ? (
+            <ChatTurnActivitySetting
+              settings={settings}
+              updateSettings={updateSettings}
+              forceVisible={matchesSettingsSearch(query, [
+                { title },
+                { title: getChatTurnActivityTitle(t) }
+              ])}
+            />
+          ) : null}
           {showDesktopOnlySettings ? (
             <NativeChatInlineVisualsSetting
               settings={settings}
@@ -119,6 +126,7 @@ export function ChatSettingsSection({
             settings={settings}
             updateSettings={updateSettings}
             hostScope={hostScope}
+            simpleMode={isSimpleMode}
             forceVisible={showAllBehavior}
           />
           {showDesktopOnlySettings ? (

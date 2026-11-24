@@ -23,6 +23,7 @@ import { useTranslate } from '@/i18n/use-translate'
 import { addAppKeyListener, removeAppKeyListener } from '@/lib/keyboard/app-keyboard-router'
 import { useScrollEdgeFades } from '@/lib/list-interaction/use-scroll-edge-fades'
 import { AgentSurfaceStep } from './AgentSurfaceStep'
+import { UseCaseStep } from './UseCaseStep'
 import { stepCopy, stepTooltipLabels } from './onboarding-step-copy'
 
 type OnboardingFlowProps = {
@@ -42,13 +43,19 @@ export default function OnboardingFlow({
   const copy =
     currentStep.id === 'agent' && flow.agentSurface === 'chat'
       ? stepCopy.agent_chat
-      : stepCopy[currentStep.id]
+      : currentStep.id === 'notifications' && flow.useCase === 'everyday'
+        ? stepCopy.notifications_everyday
+        : stepCopy[currentStep.id]
   const shouldShowSetUpLater = currentStep.id !== 'notifications'
   const shouldShowFooterBusy = Boolean(busyLabel)
   const footerPrimaryLabel =
     busyLabel ??
-    (currentStep.id === 'notifications' && !flow.hasSelectedWorkspace
-      ? t('components.onboarding.flow.actions.addFirstProject', 'Add your first project')
+    (currentStep.id === 'notifications'
+      ? flow.useCase === 'everyday'
+        ? t('components.onboarding.flow.actions.getStarted', 'Get started')
+        : !flow.hasSelectedWorkspace
+          ? t('components.onboarding.flow.actions.addFirstProject', 'Add your first project')
+          : t('components.onboarding.flow.actions.continue', 'Continue')
       : t('components.onboarding.flow.actions.continue', 'Continue'))
   const languageOffer = useOnboardingLanguageOffer(onboarding.lastCompletedStep)
   const [languagePickerOpen, setLanguagePickerOpen] = useState(false)
@@ -221,6 +228,9 @@ export default function OnboardingFlow({
                   : cn('scrollbar-sleek overflow-y-auto pr-1', 'mt-10', stepFades.className)
               )}
             >
+              {currentStep.id === 'use_case' && (
+                <UseCaseStep useCase={flow.useCase} onSelect={flow.setUseCase} />
+              )}
               {currentStep.id === 'agent_surface' && (
                 <AgentSurfaceStep
                   agentSurface={flow.agentSurface}
@@ -255,6 +265,7 @@ export default function OnboardingFlow({
                   updateSettings={flow.updateSettings}
                   lookBaseline={flow.themeLookBaseline}
                   onLookBaselineChange={flow.setThemeLookBaseline}
+                  simpleMode={flow.useCase === 'everyday'}
                 />
               )}
               {currentStep.id === 'notifications' && (

@@ -4,7 +4,6 @@ import { toast } from 'sonner'
 import { lazyWithRetry as lazy } from '@/app-shell/startup/lazy-with-retry'
 import { hasMacTrafficLights } from '@/app-shell/chrome/app-window-chrome'
 import type { AppChromeLayout } from '@/app-shell/chrome/use-app-chrome-layout'
-import { AppModeSwitcher } from '@/app-shell/simple-mode/AppModeSwitcher'
 import { ActivityPortalContainer } from '@/components/ui/activity-portal-container'
 import { Button } from '@/components/ui/button'
 import { RecoverableRenderErrorBoundary } from '@/components/error-boundaries/RecoverableRenderErrorBoundary'
@@ -219,7 +218,6 @@ export function SimpleBotsShell({ layout }: { layout: AppChromeLayout }): React.
             ) : (
               <div className="pl-2" />
             )}
-            <AppModeSwitcher className="ml-1.5" />
             {isMobile ? (
               <Button
                 variant="ghost"

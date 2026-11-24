@@ -35,13 +35,15 @@ type ChatBehaviorSettingProps = {
   /** The host picked in Settings; host-run switches read and write it. */
   hostScope: SettingsHostScope
   forceVisible?: boolean
+  simpleMode?: boolean
 }
 
 export function ChatBehaviorSetting({
   settings,
   updateSettings,
   hostScope,
-  forceVisible = false
+  forceVisible = false,
+  simpleMode = false
 }: ChatBehaviorSettingProps): React.JSX.Element | null {
   const t = useTranslate()
   const typedPermissions = useChatSettingsOwnPermissions()
@@ -67,7 +69,7 @@ export function ChatBehaviorSetting({
     entries.linkPreviews,
     entries.composerSpellcheck,
     entries.promptSuggestions,
-    entries.shellEnvironment
+    ...(!simpleMode ? [entries.shellEnvironment] : [])
   ]
   if (!forceVisible && !matchesSettingsSearch(query, rows)) {
     return null
@@ -225,18 +227,20 @@ export function ChatBehaviorSetting({
           onChange={() => updateSettings({ nativeChatPromptSuggestions: !promptSuggestions })}
         />
       </SearchableSetting>
-      <SearchableSetting
-        {...entries.shellEnvironment}
-        id={entries.shellEnvironment.targetSectionId}
-        forceVisible={forceVisible}
-        className="max-w-none"
-      >
-        <NativeChatShellEnvironmentSetting
-          settings={settings}
-          updateSettings={updateSettings}
-          hostScope={hostScope}
-        />
-      </SearchableSetting>
+      {!simpleMode ? (
+        <SearchableSetting
+          {...entries.shellEnvironment}
+          id={entries.shellEnvironment.targetSectionId}
+          forceVisible={forceVisible}
+          className="max-w-none"
+        >
+          <NativeChatShellEnvironmentSetting
+            settings={settings}
+            updateSettings={updateSettings}
+            hostScope={hostScope}
+          />
+        </SearchableSetting>
+      ) : null}
     </SettingsGroup>
   )
 }

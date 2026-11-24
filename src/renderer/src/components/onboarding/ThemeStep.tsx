@@ -27,6 +27,7 @@ type ThemeStepProps = {
   /** Settings as the step found them; each pick replaces only its own mode's slot from here. */
   lookBaseline: GlobalSettings | null
   onLookBaselineChange: (settings: GlobalSettings) => void
+  simpleMode?: boolean
 }
 
 export function applyOnboardingThemeSelection(
@@ -74,7 +75,8 @@ export function ThemeStep({
   settings,
   updateSettings,
   lookBaseline,
-  onLookBaselineChange
+  onLookBaselineChange,
+  simpleMode = false
 }: ThemeStepProps) {
   const t = useTranslate()
   const [importing, setImporting] = useState(false)
@@ -83,8 +85,8 @@ export function ThemeStep({
 
   // Preview on mount for discovery; apply settings only after explicit Import.
   useEffect(() => {
-    // Import is macOS-only; skip other platforms’ IPC/telemetry so absence rates reflect eligible hosts.
-    if (!navigator.userAgent.includes('Mac')) {
+    // Import is macOS-only and terminal-focused; skip other platforms and Everyday work mode.
+    if (simpleMode || !navigator.userAgent.includes('Mac')) {
       return
     }
     let cancelled = false
@@ -124,7 +126,7 @@ export function ThemeStep({
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [simpleMode])
 
   const importGhostty = async (preview: TerminalConfigImportPreview) => {
     if (!settings || importing) {
@@ -237,12 +239,14 @@ export function ThemeStep({
         }
       />
 
-      <GhosttyDiscoveryRow
-        discovery={discovery}
-        importing={importing}
-        disabled={!settings}
-        onImport={importGhostty}
-      />
+      {!simpleMode && (
+        <GhosttyDiscoveryRow
+          discovery={discovery}
+          importing={importing}
+          disabled={!settings}
+          onImport={importGhostty}
+        />
+      )}
 
       <div className="space-y-1.5 px-1 text-[12px] text-muted-foreground">
         <div className="flex items-center gap-2">
@@ -262,19 +266,21 @@ export function ThemeStep({
             <ExternalLink className="size-3" />
           </button>
         </div>
-        <div className="flex items-center gap-2">
-          <Settings2 className="size-3.5" />
-          <span>
-            <Trans
-              i18n={i18n}
-              defaults={t(
-                'auto.components.onboarding.ThemeStep.moreTerminalOptions',
-                'More terminal options, including font, cursor, and palette, in <settings>Settings → Terminal</settings>'
-              )}
-              components={{ settings: <span className="font-medium text-foreground" /> }}
-            />
-          </span>
-        </div>
+        {!simpleMode && (
+          <div className="flex items-center gap-2">
+            <Settings2 className="size-3.5" />
+            <span>
+              <Trans
+                i18n={i18n}
+                defaults={t(
+                  'auto.components.onboarding.ThemeStep.moreTerminalOptions',
+                  'More terminal options, including font, cursor, and palette, in <settings>Settings → Terminal</settings>'
+                )}
+                components={{ settings: <span className="font-medium text-foreground" /> }}
+              />
+            </span>
+          </div>
+        )}
       </div>
     </div>
   )

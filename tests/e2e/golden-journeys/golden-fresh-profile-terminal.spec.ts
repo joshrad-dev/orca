@@ -1,7 +1,10 @@
 import type { Page } from '@stablyai/playwright-test'
 import { test } from '../desktop/electron-fixtures/orca-app'
 import { expect } from '@stablyai/playwright-test'
-import { chooseOnboardingAgentSurface } from '../desktop/renderer-probes/onboarding-navigation'
+import {
+  chooseOnboardingAgentSurface,
+  chooseOnboardingUseCase
+} from '../desktop/renderer-probes/onboarding-navigation'
 import {
   ensureTerminalVisible,
   waitForActiveWorktree,
@@ -31,6 +34,7 @@ async function completeOnboarding(page: Page): Promise<void> {
 test('fresh profile opens a live Home terminal @golden', async ({ electronApp, orcaPage }) => {
   await waitForSessionReady(orcaPage)
   await expect(orcaPage.locator('#root')).toBeVisible()
+  await chooseOnboardingUseCase(orcaPage, 'code')
   await chooseOnboardingAgentSurface(orcaPage)
 
   await completeOnboarding(orcaPage)

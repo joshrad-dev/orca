@@ -15,30 +15,35 @@ type ChatContrastControlsProps = {
   appearance: Required<NativeChatAppearanceSettings>
   onChange: (updates: NativeChatAppearanceSettings) => void
   forceVisiblePrimary?: boolean
+  simpleMode?: boolean
 }
 
 export function AppearanceChatContrastControls({
   appearance,
   onChange,
-  forceVisiblePrimary
+  forceVisiblePrimary,
+  simpleMode = false
 }: ChatContrastControlsProps): React.JSX.Element {
   const t = useTranslate()
   const entries = getChatContrastEntriesByKey()
   const { contrast, matchTerminalInterface: matching } = appearance
+  const showMatchTerminal = !simpleMode || matching
   return (
     <>
-      <SearchableSetting
-        id={entries.matchTerminalInterface.targetSectionId}
-        {...entries.matchTerminalInterface}
-        forceVisible={forceVisiblePrimary}
-      >
-        <SettingsSwitchRow
-          label={entries.matchTerminalInterface.title}
-          description={entries.matchTerminalInterface.description}
-          checked={matching}
-          onChange={() => onChange({ matchTerminalInterface: !matching })}
-        />
-      </SearchableSetting>
+      {showMatchTerminal ? (
+        <SearchableSetting
+          id={entries.matchTerminalInterface.targetSectionId}
+          {...entries.matchTerminalInterface}
+          forceVisible={forceVisiblePrimary}
+        >
+          <SettingsSwitchRow
+            label={entries.matchTerminalInterface.title}
+            description={entries.matchTerminalInterface.description}
+            checked={matching}
+            onChange={() => onChange({ matchTerminalInterface: !matching })}
+          />
+        </SearchableSetting>
+      ) : null}
       <SearchableSetting
         id={entries.contrast.targetSectionId}
         {...entries.contrast}

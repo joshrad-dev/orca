@@ -30,6 +30,7 @@ export type AppearanceChatSectionProps = {
   settings: GlobalSettings
   updateSettings: (updates: Partial<GlobalSettings>) => void
   forceVisiblePrimary?: boolean
+  simpleMode?: boolean
   fontSuggestions?: string[]
   onRequestFontSuggestions?: () => void
 }
@@ -39,7 +40,8 @@ export function AppearanceChatSection({
   updateSettings,
   fontSuggestions,
   onRequestFontSuggestions,
-  forceVisiblePrimary = false
+  forceVisiblePrimary = false,
+  simpleMode = false
 }: AppearanceChatSectionProps): React.JSX.Element {
   const t = useTranslate()
   const appearance = resolveNativeChatAppearanceSettings(settings.nativeChatAppearance)
@@ -59,6 +61,7 @@ export function AppearanceChatSection({
       <AppearanceChatContrastControls
         appearance={appearance}
         onChange={update}
+        simpleMode={simpleMode}
         forceVisiblePrimary={forceVisiblePrimary}
       />
       <ChatFontFamilySetting

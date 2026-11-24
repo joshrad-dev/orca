@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { toast } from 'sonner'
 import { getAgentCatalog } from '@/lib/agent-catalog/agent-catalog'
 import { useAppStore } from '@/store/index'
 import { selectOnboardingWorkspaceId } from './onboarding-workspace-selection'
@@ -10,15 +9,20 @@ import { buildAgentPickedPayload } from './agent-picked-payload'
 import type { GlobalSettings } from '../../../../shared/settings/global-settings-types'
 import type { OnboardingState } from '../../../../shared/onboarding/onboarding-state-types'
 import type { TuiAgent } from '../../../../shared/agent-launch/catalog/tui-agent'
-import { STEPS, stepIndexAfterCompletedStep } from './use-onboarding-flow-types'
+import { getAppShellMode } from '@/app-shell/simple-mode/app-shell-mode-store'
+import {
+  STEPS,
+  stepIndexAfterCompletedStep,
+  type OnboardingUseCase
+} from './use-onboarding-flow-types'
 import { useOnboardingAgentSurface } from './use-onboarding-agent-surface'
 import { persistStep, useCloseWith, usePersistCurrentStep } from './use-onboarding-flow-persistence'
 import { resolveOnboardingSettingsHydration } from './onboarding-settings-hydration'
-import { translate } from '@/i18n/i18n'
 import { useOnboardingYoloPermissions } from './use-onboarding-yolo-permissions'
 import { isWindowsUserAgent } from '@/app-shell/platform/user-agent-platform'
 import {
   isSkippedStepIndex,
+  persistSkippedStepProgress,
   remapOpenOnboardingLastCompletedStep,
   resolveStepIndex,
   shouldSkipIntegrationsStep,
@@ -48,11 +52,15 @@ export function useOnboardingFlow(
   // Why: renderToStaticMarkup uses Zustand's initial snapshot; the sync read keeps tests and the first client render aligned.
   const effectivePreflightStatus = preflightStatus ?? useAppStore.getState().preflightStatus
 
+  const [useCase, setUseCase] = useState<OnboardingUseCase>(() =>
+    getAppShellMode() === 'simple' ? 'everyday' : 'code'
+  )
+  const skipCodeSteps = useCase === 'everyday'
   const skipIntegrations = shouldSkipIntegrationsStep(effectivePreflightStatus)
   const skipWindowsTerminal = shouldSkipWindowsTerminalStep(isWindowsUserAgent())
   const skipOptions = useMemo(
-    () => ({ skipIntegrations, skipWindowsTerminal }),
-    [skipIntegrations, skipWindowsTerminal]
+    () => ({ skipCodeSteps, skipIntegrations, skipWindowsTerminal }),
+    [skipCodeSteps, skipIntegrations, skipWindowsTerminal]
   )
   const remappedLastCompletedStep = remapOpenOnboardingLastCompletedStep(onboarding)
   const initialStep = resolveStepIndex(
@@ -101,7 +109,6 @@ export function useOnboardingFlow(
   const detectedAgentIdsRef = useRef<readonly TuiAgent[]>(detectedAgentIds ?? [])
   const isDetectingRef = useRef<boolean>(isDetectingAgents)
   const selectedAgentRef = useRef(selectedAgent)
-  // Stable selection handlers need current hydration evidence at click time.
   const pathSourceRef = useRef(pathSource)
   const pathFailureReasonRef = useRef(pathFailureReason)
   selectedAgentRef.current = selectedAgent
@@ -117,7 +124,6 @@ export function useOnboardingFlow(
       if (value === null || value === prev) {
         return
       }
-      // Track picks at click time so telemetry captures changes before step completion.
       track(
         'onboarding_agent_picked',
         buildAgentPickedPayload({
@@ -199,21 +205,8 @@ export function useOnboardingFlow(
     const nextIndex = getNextStepIndex(stepIndex)
     setStepIndex(nextIndex)
     // Why: persistence must resume at the next visible step, not bounce back through skipped optional pages.
-    const skippedThroughStepNumber = Math.max(
-      currentStep.stepNumber,
-      STEPS[nextIndex].stepNumber - 1
-    )
-    void persistStep(skippedThroughStepNumber).then(onOnboardingChange, (err) => {
-      toast.error(
-        translate(
-          'auto.components.onboarding.use.onboarding.flow.52acfbef51',
-          'Could not save progress'
-        ),
-        {
-          description: err instanceof Error ? err.message : String(err)
-        }
-      )
-    })
+    const skippedThrough = Math.max(currentStep.stepNumber, STEPS[nextIndex].stepNumber - 1)
+    void persistSkippedStepProgress(skippedThrough, persistStep, onOnboardingChange)
   }, [
     currentStep.id,
     currentStep.stepNumber,
@@ -261,6 +254,7 @@ export function useOnboardingFlow(
 
   const persistCurrentStep = usePersistCurrentStep({
     currentStepId: currentStep.id,
+    useCase,
     agentSurface,
     selectedAgent,
     agentInteractedRef,
@@ -290,6 +284,7 @@ export function useOnboardingFlow(
     onOnboardingChange,
     stepIndex,
     setStepIndex,
+    useCase,
     selectedAgent,
     agentSurface,
     themeLookBaseline,
@@ -305,6 +300,8 @@ export function useOnboardingFlow(
     progressSteps,
     progressStepIndex,
     currentStep,
+    useCase,
+    setUseCase,
     agentSurface,
     setAgentSurface,
     chatAgents,

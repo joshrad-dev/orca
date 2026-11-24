@@ -1,6 +1,20 @@
 import { translate } from '@/i18n/i18n'
 
 export const stepCopy = {
+  use_case: {
+    get title() {
+      return translate(
+        'components.onboarding.flow.useCase.title',
+        'What do you want to use Orca for?'
+      )
+    },
+    get subtitle() {
+      return translate(
+        'components.onboarding.flow.useCase.subtitle',
+        'You can always change this later.'
+      )
+    }
+  },
   agent_surface: {
     get title() {
       return translate(
@@ -68,6 +82,20 @@ export const stepCopy = {
       )
     }
   },
+  notifications_everyday: {
+    get title() {
+      return translate(
+        'auto.components.onboarding.OnboardingFlow.b054332836',
+        'Set up notifications'
+      )
+    },
+    get subtitle() {
+      return translate(
+        'components.onboarding.flow.notificationsEveryday.subtitle',
+        'Orca will notify you when bots finish a task or need your reply.'
+      )
+    }
+  },
   integrations: {
     get title() {
       return translate(
@@ -99,6 +127,11 @@ export const stepCopy = {
 } as const
 
 export const stepTooltipLabels = {
+  use_case: {
+    get value() {
+      return translate('components.onboarding.flow.stepTooltip.useCase', 'Use case')
+    }
+  },
   agent_surface: {
     get value() {
       return translate('components.onboarding.flow.stepTooltip.agentSurface', 'Chat or Terminal')

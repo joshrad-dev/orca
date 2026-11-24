@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useLayoutEffect, useRef } from 'react'
 import { cn } from '@/lib/class-names'
 
 const EXPAND_DRAG_THRESHOLD_PX = 28
@@ -14,7 +14,9 @@ export function SimpleSidebarEdgeExpandHandle({
   onExpand: () => void
 }): React.JSX.Element {
   const onExpandRef = useRef(onExpand)
-  onExpandRef.current = onExpand
+  useLayoutEffect(() => {
+    onExpandRef.current = onExpand
+  })
 
   const dragStartXRef = useRef<number | null>(null)
   const direction = side === 'left' ? 1 : -1

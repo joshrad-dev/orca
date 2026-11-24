@@ -37,11 +37,13 @@ function Crumb({
   bot,
   page,
   host,
+  hideRootCrumb = false,
   go
 }: {
   bot: Bot
   page: BotSettingsPage | null
   host: BotSettingsHost
+  hideRootCrumb?: boolean
   go: (to: CrumbTarget) => void
 }): React.JSX.Element {
   const t = useTranslate()
@@ -73,17 +75,23 @@ function Crumb({
       >
         <ChevronLeft />
       </Button>
-      <BreadcrumbButton onClick={() => go('exit')}>{bot.name}</BreadcrumbButton>
-      {sep}
+      {!hideRootCrumb ? (
+        <>
+          <BreadcrumbButton onClick={() => go('exit')}>{bot.name}</BreadcrumbButton>
+          {sep}
+        </>
+      ) : null}
       {page ? (
         <>
           <BreadcrumbButton
-            className="shrink-0 @max-[300px]/settings-view:hidden"
+            className={cn('shrink-0', !hideRootCrumb && '@max-[300px]/settings-view:hidden')}
             onClick={() => go('root')}
           >
             {settings}
           </BreadcrumbButton>
-          <span className="contents @max-[300px]/settings-view:hidden">{sep}</span>
+          <span className={cn('contents', !hideRootCrumb && '@max-[300px]/settings-view:hidden')}>
+            {sep}
+          </span>
           <span aria-current="page" className="shrink-0 font-semibold whitespace-nowrap">
             {botSettingsPageTitle(page)}
           </span>
@@ -132,13 +140,19 @@ export function BotSettingsView({
   bot,
   host,
   onExit,
-  onDeleted
+  onDeleted,
+  onOpenConnectors,
+  hideRootCrumb = false
 }: {
   bot: Bot
   host: BotSettingsHost
   /** Back from the root: to Activity in the panel, to the Bots list in Settings. */
   onExit: () => void
   onDeleted: () => void
+  /** Optional shortcut when Connectors has its own sibling tab in the same panel. */
+  onOpenConnectors?: () => void
+  /** Hide the `< Bot / Settings` breadcrumb bar at root when Settings is already its own tab. */
+  hideRootCrumb?: boolean
 }): React.JSX.Element {
   useResetOtherBotConnectorPage(bot)
   const place = useBotSettingsPlace(host, bot.id)
@@ -159,6 +173,10 @@ export function BotSettingsView({
   const rootScrollTop = useRef<number | null>(null)
 
   const open = (next: BotSettingsPage): void => {
+    if (next === 'connectors' && onOpenConnectors) {
+      onOpenConnectors()
+      return
+    }
     if (!page && screenRef.current) {
       const scroller = findScrollContainer(screenRef.current, host)
       if (scroller) {
@@ -235,6 +253,7 @@ export function BotSettingsView({
           // The panel takes Escape only from inside itself; dialogs and menus are portaled outside it.
           if (
             host !== 'panel' ||
+            (hideRootCrumb && !page) ||
             event.key !== 'Escape' ||
             event.nativeEvent.isComposing ||
             event.defaultPrevented ||
@@ -250,7 +269,15 @@ export function BotSettingsView({
           host === 'panel' ? 'min-h-0 flex-1' : 'mx-auto w-full max-w-[680px]'
         )}
       >
-        <Crumb bot={bot} page={page} host={host} go={(to) => void go(to)} />
+        {!hideRootCrumb || page ? (
+          <Crumb
+            bot={bot}
+            page={page}
+            host={host}
+            hideRootCrumb={hideRootCrumb}
+            go={(to) => void go(to)}
+          />
+        ) : null}
         <div
           data-settings-screen=""
           role="region"

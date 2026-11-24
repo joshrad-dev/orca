@@ -1,5 +1,5 @@
-import { Suspense, useLayoutEffect, useMemo, useRef } from 'react'
-import { Files, House, MessagesSquare, Plug } from 'lucide-react'
+import { Suspense, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
+import { Files, House, Plug, Settings } from 'lucide-react'
 import { lazyWithRetry as lazy } from '@/app-shell/startup/lazy-with-retry'
 import { SidebarToggleIcon } from '@/components/icons/SidebarToggleIcon'
 import {
@@ -15,12 +15,12 @@ import { useTranslate } from '@/i18n/use-translate'
 import { cn } from '@/lib/class-names'
 import { useAppStore } from '@/store'
 import type { Bot } from '../../../../shared/bot-types'
-import { BotChatsSkeleton } from '../bots/BotChatsSkeleton'
+import { BotSettingsView } from '../bots/settings-view/BotSettingsView'
+import { setBotSettingsPlace, useBotSettingsPlace } from '../bots/settings-view/bot-settings-place'
 import { SimpleChatFilesPanel } from './SimpleChatFilesPanel'
 
 const BotActivityPanel = lazy(() => import('../bots/BotActivityPanel'))
 const BotConnectorsPanel = lazy(() => import('../bots/BotConnectorsPanel'))
-const BotChatsPanel = lazy(() => import('../bots/BotChatsPanel'))
 
 const DRAG_STYLE: React.CSSProperties & { WebkitAppRegion: 'drag' } = { WebkitAppRegion: 'drag' }
 const NO_DRAG_STYLE: React.CSSProperties & { WebkitAppRegion: 'no-drag' } = {
@@ -29,7 +29,7 @@ const NO_DRAG_STYLE: React.CSSProperties & { WebkitAppRegion: 'no-drag' } = {
 const RIGHT_PANEL_DEFAULT_WIDTH = 360
 const RIGHT_PANEL_COLLAPSE_THRESHOLD = 140
 
-export type SimpleBotsRightTab = 'home' | 'connectors' | 'chats' | 'files'
+export type SimpleBotsRightTab = 'home' | 'connectors' | 'files' | 'settings'
 
 export function SimpleBotsRightPanel({
   bot,
@@ -56,8 +56,8 @@ export function SimpleBotsRightPanel({
   }[] = [
     { id: 'home', label: t('bots.items.tab', 'Home'), icon: House },
     { id: 'connectors', label: t('bots.connectors.tab', 'Connectors'), icon: Plug },
-    { id: 'chats', label: t('bots.chats.title', 'Chats'), icon: MessagesSquare },
-    { id: 'files', label: t('bots.files.tab', 'Files'), icon: Files }
+    { id: 'files', label: t('bots.files.tab', 'Files'), icon: Files },
+    { id: 'settings', label: t('bots.panel.settings.title', 'Settings'), icon: Settings }
   ]
 
   const { containerRef, isResizing, onResizeStart } = useSidebarResize<HTMLElement>({
@@ -87,6 +87,25 @@ export function SimpleBotsRightPanel({
     }),
     [containerRef]
   )
+
+  const panelSettingsPlace = useBotSettingsPlace('panel', bot.id)
+
+  // Any settings link inside Home (gear button, Look around, Memory upkeep) switches to the Settings tab.
+  useEffect(() => {
+    if (panelSettingsPlace !== null && activeTab !== 'settings') {
+      onTabChange('settings')
+    }
+  }, [activeTab, onTabChange, panelSettingsPlace])
+
+  const handleSelectTab = (id: SimpleBotsRightTab): void => {
+    if (id === 'settings') {
+      // Clicking Settings returns to its root so a previously opened subpage never traps the user.
+      setBotSettingsPlace('panel', { botId: bot.id, page: null })
+    } else {
+      setBotSettingsPlace('panel', null)
+    }
+    onTabChange(id)
+  }
 
   return (
     <RightSidebarGutterResizeProvider value={gutterResize}>
@@ -130,17 +149,17 @@ export function SimpleBotsRightPanel({
                   aria-selected={active}
                   aria-label={label}
                   title={label}
-                  onClick={() => onTabChange(id)}
+                  onClick={() => handleSelectTab(id)}
                   className={cn(
                     'inline-flex h-7 min-w-0 shrink items-center justify-center gap-1.5 rounded-md px-2 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
                     active
                       ? 'bg-foreground/10 text-foreground'
-                      : 'text-muted-foreground hover:bg-foreground/5 hover:text-foreground @max-[335px]/right-panel:w-7 @max-[335px]/right-panel:shrink-0 @max-[335px]/right-panel:px-0'
+                      : 'text-muted-foreground hover:bg-foreground/5 hover:text-foreground @max-[345px]/right-panel:w-7 @max-[345px]/right-panel:shrink-0 @max-[345px]/right-panel:px-0'
                   )}
                 >
                   <Icon className="size-3.5 shrink-0" />
                   <span
-                    className={cn('min-w-0 truncate', !active && '@max-[335px]/right-panel:hidden')}
+                    className={cn('min-w-0 truncate', !active && '@max-[345px]/right-panel:hidden')}
                   >
                     {label}
                   </span>
@@ -168,11 +187,30 @@ export function SimpleBotsRightPanel({
         </div>
 
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden" data-right-sidebar-panel="">
-          <Suspense fallback={activeTab === 'chats' ? <BotChatsSkeleton toolbar /> : null}>
-            {activeTab === 'home' ? <BotActivityPanel /> : null}
+          <Suspense fallback={null}>
+            {activeTab === 'home' ? <BotActivityPanel externalSettingsTab /> : null}
             {activeTab === 'connectors' ? <BotConnectorsPanel /> : null}
-            {activeTab === 'chats' ? <BotChatsPanel /> : null}
             {activeTab === 'files' ? <SimpleChatFilesPanel bot={bot} /> : null}
+            {activeTab === 'settings' ? (
+              <BotSettingsView
+                key={bot.id}
+                bot={bot}
+                host="panel"
+                hideRootCrumb
+                onOpenConnectors={() => {
+                  setBotSettingsPlace('panel', null)
+                  onTabChange('connectors')
+                }}
+                onExit={() => {
+                  setBotSettingsPlace('panel', null)
+                  onTabChange('home')
+                }}
+                onDeleted={() => {
+                  setBotSettingsPlace('panel', null)
+                  onTabChange('home')
+                }}
+              />
+            ) : null}
           </Suspense>
         </div>
       </aside>

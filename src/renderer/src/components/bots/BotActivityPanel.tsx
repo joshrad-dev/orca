@@ -49,7 +49,12 @@ function focusGearAfterClose(panel: HTMLElement | null): void {
 
 /** The right sidebar's Activity panel: a bot's header and Activity list or its settings, a group's
  *  members' items, or the focused chat's workers. */
-export default function BotActivityPanel(): React.JSX.Element | null {
+export default function BotActivityPanel({
+  externalSettingsTab = false
+}: {
+  /** True when Settings lives in its own sibling tab, keeping Home focused on activity/items. */
+  externalSettingsTab?: boolean
+} = {}): React.JSX.Element | null {
   const workspaceId = useAppStore((s) => s.activeWorktreeId)
   const bot = useBotForWorkspace(workspaceId)
   const group = useBotGroupForWorkspace(bot ? null : workspaceId)
@@ -59,13 +64,19 @@ export default function BotActivityPanel(): React.JSX.Element | null {
   if (!bot) {
     return <ChatWorkersActivity />
   }
-  return <BotActivityOrSettings key={bot.id} bot={bot} />
+  return <BotActivityOrSettings key={bot.id} bot={bot} externalSettingsTab={externalSettingsTab} />
 }
 
-function BotActivityOrSettings({ bot }: { bot: Bot }): React.JSX.Element {
+function BotActivityOrSettings({
+  bot,
+  externalSettingsTab
+}: {
+  bot: Bot
+  externalSettingsTab: boolean
+}): React.JSX.Element {
   const settings = useBotSettingsPlace('panel', bot.id)
   const panel = React.useRef<HTMLDivElement | null>(null)
-  if (!settings) {
+  if (externalSettingsTab || !settings) {
     return (
       <div ref={panel} className="flex min-h-0 flex-1 flex-col">
         <BotActivityTab bot={bot} />

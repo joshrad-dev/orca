@@ -65,6 +65,23 @@ function OutputFileIcon({ name }: { name: string }): React.JSX.Element {
   return <File className="size-4 shrink-0 text-muted-foreground" />
 }
 
+async function readVisibleOutputEntries(
+  home: BotHome
+): Promise<{ entries: DirEntry[]; error: null } | { entries: null; error: string }> {
+  try {
+    const list = await readBotHomeDir(home, '.')
+    return { entries: sortEntries(list.filter(isVisibleOutputEntry)), error: null }
+  } catch (readError: unknown) {
+    return {
+      entries: null,
+      error:
+        readError instanceof Error
+          ? readError.message
+          : translate('simpleBots.files.readFailed', 'Could not read files.')
+    }
+  }
+}
+
 function openHostPath(home: BotHome, relativePath: string): void {
   const fullPath = relativePath === '.' ? home.folderPath : botHomePath(home, relativePath)
   void window.api.shell.openPath(fullPath, home.bot.hostId).catch((error: unknown) => {
@@ -209,18 +226,13 @@ export function SimpleChatFilesPanel({
     }
     setLoading(true)
     setError(null)
-    try {
-      const list = await readBotHomeDir(home, '.')
-      setEntries(sortEntries(list.filter(isVisibleOutputEntry)))
-    } catch (readError: unknown) {
-      setError(
-        readError instanceof Error
-          ? readError.message
-          : translate('simpleBots.files.readFailed', 'Could not read files.')
-      )
-    } finally {
-      setLoading(false)
+    const result = await readVisibleOutputEntries(home)
+    if (result.error !== null) {
+      setError(result.error)
+    } else {
+      setEntries(result.entries)
     }
+    setLoading(false)
   }, [home])
 
   useEffect(() => {

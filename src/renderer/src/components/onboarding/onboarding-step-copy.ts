@@ -15,6 +15,17 @@ export const stepCopy = {
       )
     }
   },
+  ai_providers: {
+    get title() {
+      return translate('components.onboarding.flow.aiProviders.title', 'Add an AI provider')
+    },
+    get subtitle() {
+      return translate(
+        'components.onboarding.flow.aiProviders.subtitle',
+        'Connect the accounts your bots will use. You can add several at once and sign in as each finishes.'
+      )
+    }
+  },
   agent_surface: {
     get title() {
       return translate(
@@ -130,6 +141,11 @@ export const stepTooltipLabels = {
   use_case: {
     get value() {
       return translate('components.onboarding.flow.stepTooltip.useCase', 'Use case')
+    }
+  },
+  ai_providers: {
+    get value() {
+      return translate('components.onboarding.flow.stepTooltip.aiProviders', 'AI providers')
     }
   },
   agent_surface: {

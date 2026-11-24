@@ -114,11 +114,8 @@ export function useOnboardingFlowActions({
 
   const trackCurrentStepCompleted = useCallback(
     (advancedVia: 'button' | 'keyboard'): void => {
-      // In Code mode step 1 spans use_case, Chat/Terminal, and agent; only agent completes it.
-      if (
-        currentStep.id === 'agent_surface' ||
-        (currentStep.id === 'use_case' && useCase === 'code')
-      ) {
+      // Step 1 spans use_case and its follow-up page (ai_providers or agent); only the final page completes it.
+      if (currentStep.id === 'agent_surface' || currentStep.id === 'use_case') {
         return
       }
       const durationMs = consumeStepDurationMs()
@@ -130,7 +127,7 @@ export function useOnboardingFlowActions({
       })
       trackStepExitSnapshots(currentStep.id, 'continue', durationMs, advancedVia)
     },
-    [consumeStepDurationMs, currentStep, trackStepExitSnapshots, useCase]
+    [consumeStepDurationMs, currentStep, trackStepExitSnapshots]
   )
   const complete = useCallback(
     async (

@@ -35,6 +35,7 @@ export type OnboardingStepSkipOptions = {
 export function isSkippedStepIndex(index: number, options: OnboardingStepSkipOptions): boolean {
   const step = STEPS[index]
   return (
+    (!options.skipCodeSteps && step?.id === 'ai_providers') ||
     (options.skipCodeSteps &&
       (step?.id === 'agent_surface' ||
         step?.id === 'agent' ||

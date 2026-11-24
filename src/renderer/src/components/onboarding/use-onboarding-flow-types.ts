@@ -1,6 +1,7 @@
 export type StepNumber = 1 | 2 | 3 | 4 | 5
 export type StepId =
   | 'use_case'
+  | 'ai_providers'
   | 'agent_surface'
   | 'agent'
   | 'theme'
@@ -11,13 +12,14 @@ export type StepId =
 export type OnboardingUseCase = 'everyday' | 'code'
 export type AgentSurface = 'chat' | 'terminal'
 
-// Why: the use-case and Chat/Terminal pages share step 1 with the agent page so persisted progress and step telemetry keep their numbering.
+// Why: the use-case, AI-providers, and Chat/Terminal pages share step 1 with the agent page so persisted progress and step telemetry keep their numbering.
 export const STEPS: readonly {
   id: StepId
   stepNumber: StepNumber
   valueKind: 'agent' | 'theme' | 'integrations' | 'windows_terminal' | 'notifications'
 }[] = [
   { id: 'use_case', stepNumber: 1, valueKind: 'agent' },
+  { id: 'ai_providers', stepNumber: 1, valueKind: 'agent' },
   { id: 'agent_surface', stepNumber: 1, valueKind: 'agent' },
   { id: 'agent', stepNumber: 1, valueKind: 'agent' },
   { id: 'theme', stepNumber: 2, valueKind: 'theme' },

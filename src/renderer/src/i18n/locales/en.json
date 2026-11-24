@@ -20817,6 +20817,7 @@
       "flow": {
         "stepTooltip": {
           "useCase": "Use case",
+          "aiProviders": "AI providers",
           "agent": "Default Agent",
           "theme": "Appearance",
           "windowsTerminal": "Windows Terminal",
@@ -20833,6 +20834,10 @@
         "useCase": {
           "title": "What do you want to use Orca for?",
           "subtitle": "You can always change this later."
+        },
+        "aiProviders": {
+          "title": "Add an AI provider",
+          "subtitle": "Connect the accounts your bots will use. You can add several at once and sign in as each finishes."
         },
         "notificationsEveryday": {
           "subtitle": "Orca will notify you when bots finish a task or need your reply."
@@ -20916,6 +20921,62 @@
         "terminalTipCaption": "Click <em>+</em> in the tab bar, then pick an agent marked <em>(CLI)</em>. If a chat agent's CLI is installed, hover its row and click the terminal icon to use the CLI.",
         "chatTip": "Want chat too? Turn it on any time in <em>Settings → Chat UI</em>.",
         "turnOnChat": "Turn on now"
+      },
+      "aiProviders": {
+        "featured": {
+          "claude": {
+            "label": "Claude",
+            "subtitle": "Anthropic · Claude Pro, Max, or API"
+          },
+          "chatgpt": {
+            "label": "ChatGPT",
+            "subtitle": "OpenAI · ChatGPT Plus, Pro, or API"
+          },
+          "antigravity": {
+            "label": "Google (Antigravity)",
+            "subtitle": "Google · Gemini & Antigravity account"
+          },
+          "opencode2": {
+            "label": "OpenCode 2",
+            "subtitle": "OpenCode 2 · Multi-model providers & API keys"
+          }
+        },
+        "other": {
+          "oneClickInstall": "One-click install & sign in",
+          "cliSetup": "Install & sign in via setup terminal"
+        },
+        "otherHeading": "Other providers",
+        "showMore": "Show {{count}} more providers",
+        "showFewer": "Show fewer providers",
+        "summary": {
+          "connected": "{{count}} connected",
+          "installing": "{{count}} installing",
+          "signingIn": "Signing in to {{provider}}…",
+          "queued": "{{count}} queued for sign-in"
+        },
+        "status": {
+          "connected": "Connected",
+          "installed": "Installed",
+          "installing": "Installing {{provider}}…",
+          "signingIn": "Waiting for you to finish signing in…",
+          "queued": "Installed · queued to sign in next.",
+          "readyToSignIn": "Installed on this computer · ready to sign in.",
+          "downloadNote": "Downloads CLI (~{{size}} MB), then opens sign-in."
+        },
+        "actions": {
+          "add": "Add",
+          "signIn": "Sign in",
+          "cancel": "Cancel"
+        },
+        "dialog": {
+          "installTitle": "Install {{provider}}",
+          "installDescription": "Finish the installer below, then click Continue to sign in.",
+          "signInTitle": "Sign in to {{provider}}",
+          "signInDescription": "Follow the sign-in prompts below. Your browser may open to finish signing in.",
+          "slashSignInDescription": "Once {{provider}} opens below, type {{slashCommand}} to sign in, then click Done.",
+          "continueToSignIn": "Continue to sign in",
+          "done": "Done"
+        }
       },
       "useCase": {
         "everyday": {

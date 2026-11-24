@@ -23,6 +23,7 @@ import { useTranslate } from '@/i18n/use-translate'
 import { addAppKeyListener, removeAppKeyListener } from '@/lib/keyboard/app-keyboard-router'
 import { useScrollEdgeFades } from '@/lib/list-interaction/use-scroll-edge-fades'
 import { AgentSurfaceStep } from './AgentSurfaceStep'
+import { AiProvidersStep } from './AiProvidersStep'
 import { UseCaseStep } from './UseCaseStep'
 import { stepCopy, stepTooltipLabels } from './onboarding-step-copy'
 
@@ -60,18 +61,19 @@ export default function OnboardingFlow({
   const languageOffer = useOnboardingLanguageOffer(onboarding.lastCompletedStep)
   const [languagePickerOpen, setLanguagePickerOpen] = useState(false)
   const [skipConfirmOpen, setSkipConfirmOpen] = useState(false)
+  const [subDialogOpen, setSubDialogOpen] = useState(false)
   const skipConfirmAdvancedViaRef = useRef<'button' | 'keyboard'>('button')
   const { next: flowNext, dismissOnboarding: flowDismissOnboarding } = flow
 
   const requestSkipConfirmation = useCallback(
     (advancedVia: 'button' | 'keyboard') => {
-      if (busyLabel || skipConfirmOpen || languagePickerOpen) {
+      if (busyLabel || skipConfirmOpen || languagePickerOpen || subDialogOpen) {
         return
       }
       skipConfirmAdvancedViaRef.current = advancedVia
       setSkipConfirmOpen(true)
     },
-    [busyLabel, skipConfirmOpen, languagePickerOpen]
+    [busyLabel, skipConfirmOpen, languagePickerOpen, subDialogOpen]
   )
 
   const confirmSkipOnboarding = useCallback(() => {
@@ -83,7 +85,7 @@ export default function OnboardingFlow({
   // Depend on stable callbacks/step ID so the changing flow object cannot churn the key listener.
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent): void => {
-      if (languagePickerOpen || skipConfirmOpen) {
+      if (languagePickerOpen || skipConfirmOpen || subDialogOpen) {
         return
       }
       // Do not submit while typing in clone URL or another editable field.
@@ -99,11 +101,11 @@ export default function OnboardingFlow({
     }
     addAppKeyListener('keydown', onKeyDown)
     return () => removeAppKeyListener('keydown', onKeyDown)
-  }, [flowNext, languagePickerOpen, skipConfirmOpen])
+  }, [flowNext, languagePickerOpen, skipConfirmOpen, subDialogOpen])
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent): void => {
-      if (event.key !== 'Escape' || skipConfirmOpen || languagePickerOpen) {
+      if (event.key !== 'Escape' || skipConfirmOpen || languagePickerOpen || subDialogOpen) {
         return
       }
       event.preventDefault()
@@ -111,7 +113,7 @@ export default function OnboardingFlow({
     }
     addAppKeyListener('keydown', onKeyDown)
     return () => removeAppKeyListener('keydown', onKeyDown)
-  }, [requestSkipConfirmation, skipConfirmOpen, languagePickerOpen])
+  }, [requestSkipConfirmation, skipConfirmOpen, languagePickerOpen, subDialogOpen])
 
   return (
     <TooltipProvider skipDelayDuration={0}>
@@ -230,6 +232,12 @@ export default function OnboardingFlow({
             >
               {currentStep.id === 'use_case' && (
                 <UseCaseStep useCase={flow.useCase} onSelect={flow.setUseCase} />
+              )}
+              {currentStep.id === 'ai_providers' && (
+                <AiProvidersStep
+                  detectedSet={flow.detectedSet}
+                  onDialogOpenChange={setSubDialogOpen}
+                />
               )}
               {currentStep.id === 'agent_surface' && (
                 <AgentSurfaceStep

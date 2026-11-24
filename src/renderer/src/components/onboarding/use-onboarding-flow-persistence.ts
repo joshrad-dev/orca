@@ -200,10 +200,10 @@ export function usePersistCurrentStep({
     try {
       if (currentStepId === 'use_case') {
         await applyOnboardingUseCaseSelection(useCase, settings, updateSettings)
-        if (useCase === 'everyday') {
-          // Everyday work skips the coding-agent subpages, so step 1 completes here.
-          onOnboardingChange(await persistStep(1))
-        }
+        return { ok: true }
+      }
+      if (currentStepId === 'ai_providers') {
+        onOnboardingChange(await persistStep(1))
         return { ok: true }
       }
       if (currentStepId === 'agent_surface') {

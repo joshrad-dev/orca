@@ -11,13 +11,14 @@ const CHARACTER_SCORED = new Set(['ja', 'ko', 'zh'])
 // (5 clips each, so rough). Each clip's language was sent the way Orca sends it; Parakeet ignores it.
 const MEASURED = {
   // Streamed through macOS 27 SpeechAnalyzer; OS-managed assets, measured on LibriSpeech (73) and FLEURS dev (5 each).
+  // CER references drop unspoken romanized glosses such as "(Super G)" in ko clip 1527.
   'apple-speech': [
     ['en', 3.1, '2026-11-23'],
     ['de', 2.8, '2026-11-23'],
     ['es', 2.5, '2026-11-23'],
     ['fr', 8, '2026-11-23'],
     ['ja', 3.4, '2026-11-23'],
-    ['ko', 3.4, '2026-11-23'],
+    ['ko', 6.3, '2026-11-23'],
     ['pt', 14.2, '2026-11-23'],
     ['zh', 4.9, '2026-11-23']
   ],

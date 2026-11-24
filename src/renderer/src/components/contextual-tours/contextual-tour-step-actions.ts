@@ -1,6 +1,7 @@
 import type { ContextualTourStepAction } from '../../../../shared/feature-education/contextual-tours/contextual-tours'
 import type { RequestActiveTerminalPaneSplitDetail } from '@/constants/terminal'
 import { trackBrowserExtensionsWebStoreOpened } from '@/diagnostics/telemetry/browser-extensions-telemetry'
+import { requestSimpleBotsNewBot } from '@/components/simple-bots-shell/simple-bots-new-bot-request'
 
 export function performContextualTourStepAction(args: {
   action: ContextualTourStepAction
@@ -71,6 +72,11 @@ export function performContextualTourStepAction(args: {
       args.schedule(() => {
         args.openClientHostedBrowserSettings()
       })
+      return
+    case 'open-new-bot':
+      // Why: New bot's dialog covers the target the tooltip is anchored to.
+      args.finishTour()
+      args.schedule(requestSimpleBotsNewBot)
       return
     case 'open-chrome-web-store':
       void args.openChromeWebStore().then((opened) => {

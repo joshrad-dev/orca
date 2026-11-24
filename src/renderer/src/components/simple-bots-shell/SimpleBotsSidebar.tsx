@@ -73,6 +73,7 @@ export function SimpleBotsSidebar({
 
   return (
     <aside
+      data-contextual-tour-target="simple-bots-sidebar"
       ref={containerRef}
       style={layout.leftSidebarStyle}
       className="relative flex shrink-0 flex-col border-r border-border bg-sidebar text-sidebar-foreground"

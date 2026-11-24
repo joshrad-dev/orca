@@ -24141,6 +24141,37 @@
           "bodyWithoutShortcut": "Click this button, or {{modifier}}-click any project header.",
           "action": "Got it"
         }
+      },
+      "botsWelcome": {
+        "newBot": {
+          "title": "Create a bot here",
+          "body": "Tell it what job to do in your own words."
+        },
+        "templates": {
+          "title": "Or start from a ready-made template",
+          "body": "Pick a job like an email digest or meeting prep and adjust it."
+        },
+        "sidebar": {
+          "title": "Your bots show up here",
+          "body": "Click a bot to chat with it or see what it has been doing.",
+          "action": "Done",
+          "secondaryAction": "Create a bot"
+        }
+      },
+      "botsFirstBot": {
+        "connectors": {
+          "title": "Connect apps like Gmail or Slack here",
+          "body": "Your bot can only use the apps you connect."
+        },
+        "composer": {
+          "title": "Talk to your bot here",
+          "body": "Ask it to do something, or tell it how you like things done."
+        },
+        "schedules": {
+          "title": "Schedules live in Home",
+          "body": "See what your bot does on a schedule and what it did last.",
+          "action": "Done"
+        }
       }
     },
     "tabGroup": {

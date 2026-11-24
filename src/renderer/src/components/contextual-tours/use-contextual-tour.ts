@@ -20,7 +20,9 @@ const TOUR_SOURCES = {
   automations: 'automations_open',
   'floating-workspace': 'floating_workspace_visible',
   'workspace-creation': 'workspace_creation_visible',
-  'projects-collapse-all': 'project_header_collapsed'
+  'projects-collapse-all': 'project_header_collapsed',
+  'bots-welcome': 'everyday_onboarding_completed',
+  'bots-first-bot': 'simple_bots_bot_open'
 } satisfies Record<ContextualTourId, string>
 
 export type UseContextualTourOptions = {

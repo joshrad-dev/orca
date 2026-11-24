@@ -25,6 +25,7 @@ import {
   type OnboardingStepSkipOptions,
   type TaskSourcesExitAction
 } from './onboarding-flow-state'
+import { requestBotsWelcomeTour } from '../simple-bots-shell/simple-bots-tours'
 
 type CloseWith = (
   outcome: 'completed' | 'dismissed',
@@ -137,6 +138,7 @@ export function useOnboardingFlowActions({
     ): Promise<boolean> => {
       const closed = await closeWith('completed', ONBOARDING_FINAL_STEP, path)
       if (closed && useCase === 'everyday') {
+        requestBotsWelcomeTour()
         return closed
       }
       if (closed && !worktreeId && path === 'add_project_modal') {

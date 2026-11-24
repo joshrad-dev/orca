@@ -1,3 +1,4 @@
+import { getAppShellMode, type AppShellMode } from '@/app-shell/simple-mode/app-shell-mode-store'
 import type {
   ContextualTour,
   ContextualTourStep
@@ -22,6 +23,7 @@ export type ContextualTourRequestDecision =
         | 'active-tour'
         | 'modal'
         | 'blocking-surface'
+        | 'other-app-shell'
         | 'missing-start-target'
     }
 
@@ -158,6 +160,8 @@ export function getContextualTourRequestDecision(args: {
   activeTourId: string | null
   activeModal: string
   blockingSurfaceVisible: boolean
+  /** The shell on screen, the current mode by default; a tour for the other one never starts. */
+  appShell?: AppShellMode
   targetExists: (selector: string) => boolean
   isStepDone?: (step: ContextualTourStep) => boolean
 }): ContextualTourRequestDecision {
@@ -187,6 +191,9 @@ export function getContextualTourRequestDecision(args: {
   }
   if (args.blockingSurfaceVisible) {
     return { kind: 'blocked', reason: 'blocking-surface' }
+  }
+  if ((args.tour.appShell ?? 'ide') !== (args.appShell ?? getAppShellMode())) {
+    return { kind: 'blocked', reason: 'other-app-shell' }
   }
 
   const stepIndex = getContextualTourStartStepIndex(args.tour, args.targetExists, args.isStepDone)

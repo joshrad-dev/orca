@@ -10,7 +10,9 @@ export const FEATURE_EDUCATION_CONTEXTUAL_TOUR_IDS = [
   'automations',
   'floating-workspace',
   'workspace-creation',
-  'projects-collapse-all'
+  'projects-collapse-all',
+  'bots-welcome',
+  'bots-first-bot'
 ] as const satisfies readonly ContextualTourId[]
 
 export const FEATURE_EDUCATION_SOURCES = [
@@ -26,6 +28,8 @@ export const FEATURE_EDUCATION_SOURCES = [
   'project_header_collapsed',
   'workspace_creation_modal',
   'setup_guide_parallel_work',
+  'everyday_onboarding_completed',
+  'simple_bots_bot_open',
   'unknown'
 ] as const
 

@@ -26,6 +26,8 @@ export type FeatureInteractionId =
   | 'markdown-file-created'
   | 'workspace-creation'
   | 'projects-collapse-all'
+  | 'bots-welcome'
+  | 'bots-first-bot'
   | 'agent-browser-setup'
   | 'agent-browser-use'
   | 'agent-orchestration-setup'
@@ -103,6 +105,8 @@ export const FEATURE_INTERACTIONS = [
     id: 'projects-collapse-all',
     interaction: 'all sidebar projects collapsed or expanded at once'
   },
+  { id: 'bots-welcome', interaction: 'Simple Bots welcome tour shown' },
+  { id: 'bots-first-bot', interaction: 'Simple Bots first-bot tour shown' },
   { id: 'agent-browser-setup', interaction: 'Agent Browser Use setup enabled or opened' },
   { id: 'agent-browser-use', interaction: 'agent browser runtime method used' },
   { id: 'ephemeral-vm-setup', interaction: 'Ephemeral VMs setup opened or scaffold prompt copied' },

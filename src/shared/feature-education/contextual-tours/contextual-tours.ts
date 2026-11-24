@@ -1,5 +1,6 @@
 import { BROWSER_EXTENSION_DISCOVERY_TOUR } from '../../browser/extensions/browser-extension-discovery-tour'
 import type { FeatureInteractionId } from '../interactions/feature-interaction-catalog'
+import { BOTS_FIRST_BOT_TOUR, BOTS_WELCOME_TOUR } from './simple-bots-contextual-tours'
 
 export type ContextualTourId =
   | 'workspace-board'
@@ -12,6 +13,8 @@ export type ContextualTourId =
   | 'floating-workspace'
   | 'workspace-creation'
   | 'projects-collapse-all'
+  | 'bots-welcome'
+  | 'bots-first-bot'
 
 export type ContextualTourStepControl =
   | { kind: 'auto-rename-branch-from-work' }
@@ -28,6 +31,7 @@ export type ContextualTourStepActionKind =
   | 'open-getting-started'
   | 'open-client-hosted-browser-settings'
   | 'open-chrome-web-store'
+  | 'open-new-bot'
 
 export type ContextualTourStepAction = {
   kind: ContextualTourStepActionKind
@@ -56,6 +60,8 @@ export type ContextualTourStep = {
 
 export type ContextualTour = {
   id: ContextualTourId
+  /** The app shell this tour's targets live in; 'ide' when unset. */
+  appShell?: 'ide' | 'simple'
   kind?: 'announcement'
   preserveFocus?: boolean
   allowedActiveModals?: readonly string[]
@@ -274,7 +280,9 @@ export const CONTEXTUAL_TOURS = [
         targetSelector: '[data-contextual-tour-target="workspace-creation-agent"]'
       }
     ]
-  }
+  },
+  BOTS_WELCOME_TOUR,
+  BOTS_FIRST_BOT_TOUR
 ] as const satisfies readonly ContextualTour[]
 
 export type ContextualTourStepId = (typeof CONTEXTUAL_TOURS)[number]['steps'][number]['id']

@@ -1,6 +1,7 @@
 import { translate } from '@/i18n/i18n'
 import { getShortcutPlatform } from '@/lib/keyboard/shortcut-platform'
 import type { ContextualTourStepId } from '../../../../shared/feature-education/contextual-tours/contextual-tours'
+import { SIMPLE_BOTS_TOUR_STEP_COPY } from './simple-bots-tour-step-copy'
 
 export type LocalizedContextualTourStepCopy = {
   title: string
@@ -11,7 +12,7 @@ export type LocalizedContextualTourStepCopy = {
   secondaryActionLabel?: string
 }
 
-type StepCopyThunk = () => LocalizedContextualTourStepCopy
+export type StepCopyThunk = () => LocalizedContextualTourStepCopy
 
 const getProjectsCollapseModifierLabel = (): string =>
   getShortcutPlatform() === 'darwin' ? '⌥' : 'Alt'
@@ -270,7 +271,8 @@ const LOCALIZED_STEP_COPY: Partial<Record<string, StepCopyThunk>> = {
       'components.contextualTours.projectsCollapseAll.intro.action',
       'Got it'
     )
-  })
+  }),
+  ...SIMPLE_BOTS_TOUR_STEP_COPY
 } satisfies Record<ContextualTourStepId, StepCopyThunk>
 
 export function getLocalizedContextualTourStepCopy(

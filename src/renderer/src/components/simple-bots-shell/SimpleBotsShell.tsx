@@ -34,6 +34,8 @@ import { SimpleBotsRightPanel, type SimpleBotsRightTab } from './SimpleBotsRight
 import { SimpleBotsSidebar } from './SimpleBotsSidebar'
 import { SimpleSidebarEdgeExpandHandle } from './SimpleSidebarEdgeExpandHandle'
 import { useConnectedFeaturedAgents } from './use-connected-featured-agents'
+import { onSimpleBotsNewBotRequest } from './simple-bots-new-bot-request'
+import { useBotsFirstBotTour } from './simple-bots-tours'
 
 const Settings = lazy(() => import('../settings/Settings'))
 const MobilePage = lazy(() => import('../mobile/MobilePage'))
@@ -179,6 +181,19 @@ export function SimpleBotsShell({ layout }: { layout: AppChromeLayout }): React.
     return title || t('simpleBots.chat.fallbackTitle', 'Chat')
   }, [activeBot, activeBotTree.chats, activeChatTab, t])
 
+  useEffect(() => onSimpleBotsNewBotRequest(() => setNewBotOpen(true)), [])
+
+  const chatShown = Boolean(
+    activeChatTab && isStructuredTab(activeChatTab) && activeChatTab.agentSessionAgent
+  )
+  useBotsFirstBotTour(
+    activeView !== 'settings' &&
+      activeView !== 'mobile' &&
+      activeBot !== null &&
+      layout.rightSidebarOpen &&
+      chatShown
+  )
+
   const handleNewChat = (): void => {
     if (!activeBot || creatingChat || activeBotOffline) {
       return
@@ -290,7 +305,10 @@ export function SimpleBotsShell({ layout }: { layout: AppChromeLayout }): React.
             onToggleRightSidebar={toggleRightSidebar}
           />
 
-          <main className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+          <main
+            data-contextual-tour-target="simple-bots-chat"
+            className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden"
+          >
             {!activeBot ? (
               <div className="flex flex-1 flex-col items-center justify-center px-6 text-center">
                 <div className="mb-4 flex size-12 items-center justify-center rounded-xl border border-border bg-card">
@@ -306,11 +324,20 @@ export function SimpleBotsShell({ layout }: { layout: AppChromeLayout }): React.
                   )}
                 </p>
                 <div className="mt-5 flex items-center gap-2">
-                  <Button size="sm" onClick={() => setNewBotOpen(true)}>
+                  <Button
+                    size="sm"
+                    data-contextual-tour-target="simple-bots-new-bot"
+                    onClick={() => setNewBotOpen(true)}
+                  >
                     <Plus className="size-4" />
                     <span>{t('simpleBots.sidebar.newBot', 'New bot')}</span>
                   </Button>
-                  <Button variant="secondary" size="sm" onClick={() => openBotTemplates()}>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    data-contextual-tour-target="simple-bots-templates"
+                    onClick={() => openBotTemplates()}
+                  >
                     <LayoutTemplate className="size-4" />
                     <span>{t('simpleBots.sidebar.browseTemplates', 'Browse templates')}</span>
                   </Button>

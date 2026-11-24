@@ -47,6 +47,8 @@ export const FEATURE_INTERACTION_CATEGORY_BY_ID = {
   'markdown-file-created': 'notes',
   'workspace-creation': 'workspace',
   'projects-collapse-all': 'workspace',
+  'bots-welcome': 'agent',
+  'bots-first-bot': 'agent',
   'agent-browser-setup': 'setup',
   'agent-browser-use': 'agent',
   'ephemeral-vm-setup': 'setup',

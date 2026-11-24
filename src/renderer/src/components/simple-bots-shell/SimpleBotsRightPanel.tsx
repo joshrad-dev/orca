@@ -31,6 +31,11 @@ const RIGHT_PANEL_COLLAPSE_THRESHOLD = 140
 
 export type SimpleBotsRightTab = 'home' | 'connectors' | 'files' | 'settings'
 
+const TAB_TOUR_TARGETS: Partial<Record<SimpleBotsRightTab, string>> = {
+  home: 'simple-bots-home-tab',
+  connectors: 'simple-bots-connectors-tab'
+}
+
 export function SimpleBotsRightPanel({
   bot,
   activeTab,
@@ -148,6 +153,7 @@ export function SimpleBotsRightPanel({
                   role="tab"
                   aria-selected={active}
                   aria-label={label}
+                  data-contextual-tour-target={TAB_TOUR_TARGETS[id]}
                   title={label}
                   onClick={() => handleSelectTab(id)}
                   className={cn(

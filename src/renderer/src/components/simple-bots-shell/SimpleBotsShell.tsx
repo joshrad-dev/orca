@@ -33,6 +33,7 @@ import { SimpleBotsHeader } from './SimpleBotsHeader'
 import { SimpleBotsRightPanel, type SimpleBotsRightTab } from './SimpleBotsRightPanel'
 import { SimpleBotsSidebar } from './SimpleBotsSidebar'
 import { SimpleSidebarEdgeExpandHandle } from './SimpleSidebarEdgeExpandHandle'
+import { useConnectedFeaturedAgents } from './use-connected-featured-agents'
 
 const Settings = lazy(() => import('../settings/Settings'))
 const MobilePage = lazy(() => import('../mobile/MobilePage'))
@@ -59,12 +60,15 @@ function SimpleBotsModals({
 }): React.JSX.Element {
   const templatesOpen = useAppStore((s) => s.activeModal === 'bot-templates')
   const shareRequest = useBotShareReceiveRequest()
+  // The first bot runs on the provider the owner just connected, not whichever CLI happens to be installed.
+  const connectedAgents = useConnectedFeaturedAgents(true, newBotOpen)
 
   return (
     <>
       {newBotOpen ? (
         <NewBotDialog
           open={newBotOpen}
+          preferredAgents={connectedAgents}
           onOpenChange={(open, made) => {
             onNewBotOpenChange(open)
             if (made) {

@@ -27,6 +27,7 @@ import { bindHorizontalWheelScroll } from '@/lib/horizontal-wheel-scroll'
 import { useTranslate } from '@/i18n/use-translate'
 import { useBots } from '@/lib/bot-catalog'
 import { useAppStore } from '@/store'
+import { useAppShellMode } from '@/app-shell/simple-mode/app-shell-mode-store'
 import { NewBotDialog } from '../NewBotDialog'
 import { openBotShareLink } from '../sharing/bot-share-receive-open'
 import { templateProposal } from '../../../../../shared/bots/bot-proposal'
@@ -41,6 +42,7 @@ import { BotTemplateDetail } from './BotTemplateDetail'
 import { BotTemplateRow } from './BotTemplateRow'
 import { botTemplateCategoryLabel } from './bot-template-labels'
 import { BotTemplatesEmpty } from './BotTemplatesEmpty'
+import { useConnectedFeaturedAgents } from '../../simple-bots-shell/use-connected-featured-agents'
 
 // Below this dialog width the detail column folds away (the @max-[56rem] classes, 896px) and a row opens
 // the detail in place of the list.
@@ -80,6 +82,8 @@ function BotTemplatesDialogContent({ onClose }: { onClose: () => void }): React.
   const [category, setCategory] = useState<BotTemplateCategory | null>(null)
   const [inPlace, setInPlace] = useState(false)
   const [creating, setCreating] = useState<Creating | null>(null)
+  const simpleMode = useAppShellMode() === 'simple'
+  const connectedAgents = useConnectedFeaturedAgents(simpleMode, creating !== null)
   const contentRef = useRef<HTMLDivElement>(null)
   const searchRef = useRef<HTMLInputElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
@@ -365,6 +369,7 @@ function BotTemplatesDialogContent({ onClose }: { onClose: () => void }): React.
               : undefined
           }
           initialPurpose={creating.purpose}
+          preferredAgents={connectedAgents}
           returnFocusTo={invoker}
           // New bot has opened the bot's page by now.
           onCreated={onClose}

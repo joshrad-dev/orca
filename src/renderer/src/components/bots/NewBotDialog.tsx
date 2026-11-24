@@ -78,6 +78,7 @@ export function NewBotDialog({
   initialName,
   initialPurpose,
   initialAgent,
+  preferredAgents,
   takingOver,
   proposal,
   fromOffer,
@@ -98,6 +99,8 @@ export function NewBotDialog({
   initialPurpose?: string
   /** The agent picked at first, when this computer has it. */
   initialAgent?: BotAgent
+  /** Without `initialAgent`, the first of these this computer has is picked at first. */
+  preferredAgents?: readonly BotAgent[]
   /** Made in Hand to bot: `onCreated` sends its first turn, once the workspace moved, even when its
    *  page could not open. */
   takingOver?: true
@@ -140,7 +143,8 @@ export function NewBotDialog({
   const name = typedName ?? (fromShare ? freeBotName(fromShare.review.bot.name, hostBots) : '')
   const { model, choices } = useBotAgentMenu(hostId, open)
   // A bot from someone else's link starts on Ask, whatever the owner's chats do.
-  const agentSetup = useBotAgentSetup(choices, hostId, initialAgent, fromShare && 'ask')
+  const firstAgent = initialAgent ?? preferredAgents?.find((agent) => choices.includes(agent))
+  const agentSetup = useBotAgentSetup(choices, hostId, firstAgent, fromShare && 'ask')
   const [creating, setCreating] = useState(false)
   const createInFlight = useRef(false)
   const [submitted, setSubmitted] = useState(false)

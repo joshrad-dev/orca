@@ -74,13 +74,13 @@ export function useBotAgentSetup(
   initialAgent?: BotAgent,
   keptPermission?: AgentChatPermissionMode
 ) {
+  // Read live, so an `initialAgent` that resolves after mount still applies until the owner picks.
   const first: BotAgentSetup = { agent: initialAgent ?? 'claude' }
-  const [picked, setPicked] = useState<{ hostId: ExecutionHostId | null; setup: BotAgentSetup }>({
-    hostId: null,
-    setup: first
-  })
+  const [picked, setPicked] = useState<{ hostId: ExecutionHostId; setup: BotAgentSetup } | null>(
+    null
+  )
   const [intent, setIntent] = useState<BotPermissionIntent | undefined>(keptPermission)
-  const own = picked.hostId === null || picked.hostId === hostId ? picked.setup : first
+  const own = picked?.hostId === hostId ? picked.setup : first
   const followed = choices.includes(own.agent) ? own : { agent: choices[0] ?? own.agent }
   const setup = intent === undefined ? followed : withIntent(followed, intent)
   return {
@@ -96,7 +96,7 @@ export function useBotAgentSetup(
     },
     reset: () => {
       setIntent(keptPermission)
-      setPicked({ hostId: null, setup: first })
+      setPicked(null)
     }
   }
 }

@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react'
-import { ChevronDown, ChevronRight } from 'lucide-react'
+import { ChevronDown } from 'lucide-react'
+import { cn } from '@/lib/class-names'
 import { useTranslate } from '@/i18n/use-translate'
 import { Button } from '@/components/ui/button'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
@@ -16,8 +17,7 @@ import type { BotAgent } from '../../../../shared/bot-types'
 import { OnboardingInlineCommandTerminal } from './OnboardingInlineCommandTerminal'
 import {
   FEATURED_AI_PROVIDERS,
-  MORE_OTHER_AI_PROVIDERS,
-  PRIMARY_OTHER_AI_PROVIDERS,
+  OTHER_AI_PROVIDERS,
   getOnboardingProviderLabel
 } from './ai-provider-catalog'
 import { useOnboardingProviderAccounts } from './use-onboarding-provider-accounts'
@@ -34,7 +34,7 @@ export function AiProvidersStep({
 }: AiProvidersStepProps): React.JSX.Element {
   const t = useTranslate()
   const accounts = useOnboardingProviderAccounts(onDialogOpenChange)
-  const [showMoreOther, setShowMoreOther] = useState(false)
+  const [showOther, setShowOther] = useState(false)
   const [installingAgents, setInstallingAgents] = useState<ReadonlySet<BotAgent>>(new Set())
 
   const handleInstallingChange = useCallback((agent: BotAgent, installing: boolean) => {
@@ -129,77 +129,46 @@ export function AiProvidersStep({
         ))}
       </div>
 
-      <section className="space-y-2.5">
-        <h2 className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
-          {t('components.onboarding.aiProviders.otherHeading', 'Other providers')}
-        </h2>
-        <div className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card/50">
-          {PRIMARY_OTHER_AI_PROVIDERS.map((provider) => (
-            <AiProviderRow
-              key={provider.agent}
-              provider={provider}
-              variant="row"
-              detected={detectedSet.has(provider.agent)}
-              platform={accounts.platform}
-              connection={accounts.connections[provider.agent]}
-              signInError={accounts.signInErrors[provider.agent]}
-              isSigningIn={accounts.activeSignIn?.agent === provider.agent}
-              isQueued={accounts.signInQueue.some((item) => item.agent === provider.agent)}
-              onEnqueueSignIn={accounts.enqueueSignIn}
-              onCancelSignIn={accounts.cancelActiveSignIn}
-              onRemoveFromQueue={accounts.removeFromQueue}
-              onOpenShellInstall={accounts.openShellInstallModal}
-              onInstallingChange={handleInstallingChange}
-            />
-          ))}
-
-          <Collapsible open={showMoreOther} onOpenChange={setShowMoreOther}>
-            <CollapsibleContent>
-              <div className="divide-y divide-border border-t border-border">
-                {MORE_OTHER_AI_PROVIDERS.map((provider) => (
-                  <AiProviderRow
-                    key={provider.agent}
-                    provider={provider}
-                    variant="row"
-                    detected={detectedSet.has(provider.agent)}
-                    platform={accounts.platform}
-                    connection={accounts.connections[provider.agent]}
-                    signInError={accounts.signInErrors[provider.agent]}
-                    isSigningIn={accounts.activeSignIn?.agent === provider.agent}
-                    isQueued={accounts.signInQueue.some((item) => item.agent === provider.agent)}
-                    onEnqueueSignIn={accounts.enqueueSignIn}
-                    onCancelSignIn={accounts.cancelActiveSignIn}
-                    onRemoveFromQueue={accounts.removeFromQueue}
-                    onOpenShellInstall={accounts.openShellInstallModal}
-                    onInstallingChange={handleInstallingChange}
-                  />
-                ))}
-              </div>
-            </CollapsibleContent>
-            <CollapsibleTrigger asChild>
-              <button
-                type="button"
-                className="flex w-full items-center gap-1.5 px-4 py-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
-              >
-                {showMoreOther ? (
-                  <ChevronDown className="size-3.5 shrink-0" />
-                ) : (
-                  <ChevronRight className="size-3.5 shrink-0" />
+      <div className="overflow-hidden rounded-xl border border-border bg-card/50">
+        <Collapsible open={showOther} onOpenChange={setShowOther}>
+          <CollapsibleTrigger asChild>
+            <button
+              type="button"
+              className="flex w-full items-center justify-between gap-2 px-4 py-2.5 text-left text-xs font-medium text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
+            >
+              <span>{t('components.onboarding.aiProviders.otherHeading', 'Other providers')}</span>
+              <ChevronDown
+                className={cn(
+                  'size-3.5 shrink-0 transition-transform duration-150',
+                  showOther && 'rotate-180'
                 )}
-                <span>
-                  {showMoreOther
-                    ? t('components.onboarding.aiProviders.showFewer', 'Show fewer providers')
-                    : t(
-                        'components.onboarding.aiProviders.showMore',
-                        'Show {{count}} more providers',
-                        { count: MORE_OTHER_AI_PROVIDERS.length }
-                      )}
-                </span>
-              </button>
-            </CollapsibleTrigger>
-          </Collapsible>
-        </div>
-      </section>
+              />
+            </button>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <div className="divide-y divide-border border-t border-border">
+              {OTHER_AI_PROVIDERS.map((provider) => (
+                <AiProviderRow
+                  key={provider.agent}
+                  provider={provider}
+                  variant="row"
+                  detected={detectedSet.has(provider.agent)}
+                  platform={accounts.platform}
+                  connection={accounts.connections[provider.agent]}
+                  signInError={accounts.signInErrors[provider.agent]}
+                  isSigningIn={accounts.activeSignIn?.agent === provider.agent}
+                  isQueued={accounts.signInQueue.some((item) => item.agent === provider.agent)}
+                  onEnqueueSignIn={accounts.enqueueSignIn}
+                  onCancelSignIn={accounts.cancelActiveSignIn}
+                  onRemoveFromQueue={accounts.removeFromQueue}
+                  onOpenShellInstall={accounts.openShellInstallModal}
+                  onInstallingChange={handleInstallingChange}
+                />
+              ))}
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+      </div>
 
       <Dialog
         open={modal !== null}

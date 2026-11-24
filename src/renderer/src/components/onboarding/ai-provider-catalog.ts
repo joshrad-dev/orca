@@ -224,18 +224,14 @@ function buildOtherProvider(agent: BotAgent, managedInstall: boolean): Onboardin
   }
 }
 
-export const PRIMARY_OTHER_AI_PROVIDERS: readonly OnboardingAiProvider[] = MANAGED_OTHER_AGENTS.map(
-  (agent) => buildOtherProvider(agent, true)
-)
-
-export const MORE_OTHER_AI_PROVIDERS: readonly OnboardingAiProvider[] = SHELL_OTHER_AGENTS.map(
-  (agent) => buildOtherProvider(agent, false)
-)
+export const OTHER_AI_PROVIDERS: readonly OnboardingAiProvider[] = [
+  ...MANAGED_OTHER_AGENTS.map((agent) => buildOtherProvider(agent, true)),
+  ...SHELL_OTHER_AGENTS.map((agent) => buildOtherProvider(agent, false))
+]
 
 export const ALL_ONBOARDING_AI_PROVIDERS: readonly OnboardingAiProvider[] = [
   ...FEATURED_AI_PROVIDERS,
-  ...PRIMARY_OTHER_AI_PROVIDERS,
-  ...MORE_OTHER_AI_PROVIDERS
+  ...OTHER_AI_PROVIDERS
 ]
 
 export function findOnboardingAiProvider(agent: BotAgent): OnboardingAiProvider {

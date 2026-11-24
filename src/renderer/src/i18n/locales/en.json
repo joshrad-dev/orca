@@ -20946,8 +20946,6 @@
           "cliSetup": "Install & sign in via setup terminal"
         },
         "otherHeading": "Other providers",
-        "showMore": "Show {{count}} more providers",
-        "showFewer": "Show fewer providers",
         "summary": {
           "connected": "{{count}} connected",
           "installing": "{{count}} installing",

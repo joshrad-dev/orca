@@ -36,7 +36,11 @@ import {
   type BotTemplate,
   type BotTemplateCategory
 } from '../../../../../shared/bots/bot-templates'
-import { botTemplateGroups, botTemplateMatches } from '../../../../../shared/bots/bot-template-view'
+import {
+  EVERYDAY_BOT_TEMPLATE_CATEGORIES,
+  botTemplateGroups,
+  botTemplateMatches
+} from '../../../../../shared/bots/bot-template-view'
 import { botTemplateBotName, botTemplateText } from '../../../../../shared/bots/bot-template-text'
 import { BotTemplateDetail } from './BotTemplateDetail'
 import { BotTemplateRow } from './BotTemplateRow'
@@ -91,10 +95,12 @@ function BotTemplatesDialogContent({ onClose }: { onClose: () => void }): React.
   const invoker = useRef<HTMLElement | null>(null)
 
   const label = (category: BotTemplateCategory) => botTemplateCategoryLabel(category, t)
+  const categories = simpleMode ? EVERYDAY_BOT_TEMPLATE_CATEGORIES : BOT_TEMPLATE_CATEGORIES
   const groups = botTemplateGroups(
     (template) =>
       (!category || template.category === category) &&
-      botTemplateMatches(template, query, label, (english) => botTemplateText(english, t))
+      botTemplateMatches(template, query, label, (english) => botTemplateText(english, t)),
+    simpleMode
   )
   const shown = groups.flatMap((group) => group.templates)
   const selectedId = picked ?? asked ?? lastSelected
@@ -247,9 +253,7 @@ function BotTemplatesDialogContent({ onClose }: { onClose: () => void }): React.
                     aria-label={t('bots.templates.filterCategory', 'Filter by category')}
                     className="w-max"
                     onValueChange={(value) => {
-                      setCategory(
-                        BOT_TEMPLATE_CATEGORIES.find((option) => option === value) ?? null
-                      )
+                      setCategory(categories.find((option) => option === value) ?? null)
                       listRef.current?.scrollTo({ top: 0 })
                     }}
                   >
@@ -257,7 +261,7 @@ function BotTemplatesDialogContent({ onClose }: { onClose: () => void }): React.
                       <LayoutGrid className="size-3" aria-hidden />
                       {t('bots.templates.allCategories', 'All')}
                     </ToggleGroupItem>
-                    {BOT_TEMPLATE_CATEGORIES.map((option) => {
+                    {categories.map((option) => {
                       const Icon = CATEGORY_ICONS[option]
                       return (
                         <ToggleGroupItem key={option} value={option}>

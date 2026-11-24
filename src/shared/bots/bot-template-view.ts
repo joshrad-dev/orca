@@ -68,16 +68,47 @@ export function botTemplateMatches(
   return words.every((word) => text.includes(word))
 }
 
-/** The catalog in its category order, each category with the templates the search kept. */
+/** Simple Bots mode: everyday categories first, without the developer ones (coding, releases). */
+export const EVERYDAY_BOT_TEMPLATE_CATEGORIES: readonly BotTemplateCategory[] = [
+  'personal',
+  'planning',
+  'support',
+  'ops'
+]
+
+// Everyday jobs that need no developer tools lead their category in Simple Bots mode.
+const EVERYDAY_LEADING_TEMPLATE_IDS: readonly string[] = [
+  'email-digest',
+  'meeting-prep',
+  'followup'
+]
+
+function everydayRank(template: BotTemplate): number {
+  const at = EVERYDAY_LEADING_TEMPLATE_IDS.indexOf(template.id)
+  return at === -1 ? EVERYDAY_LEADING_TEMPLATE_IDS.length : at
+}
+
+/** The catalog in its category order, each category with the templates the search kept. `everyday`
+ *  uses Simple Bots mode's order and leaves out the developer categories. */
 export function botTemplateGroups(
-  matches: (template: BotTemplate) => boolean
+  matches: (template: BotTemplate) => boolean,
+  everyday = false
 ): { category: BotTemplateCategory; templates: BotTemplate[] }[] {
-  return BOT_TEMPLATE_CATEGORIES.map((category) => ({
-    category,
-    templates: BOT_TEMPLATES.filter(
-      (template) => template.category === category && matches(template)
-    )
-  })).filter((group) => group.templates.length > 0)
+  const categories = everyday ? EVERYDAY_BOT_TEMPLATE_CATEGORIES : BOT_TEMPLATE_CATEGORIES
+  return categories
+    .map((category) => {
+      const templates = BOT_TEMPLATES.filter(
+        (template) => template.category === category && matches(template)
+      )
+      return {
+        category,
+        // Array#sort is stable, so the rest keep catalog order.
+        templates: everyday
+          ? templates.sort((a, b) => everydayRank(a) - everydayRank(b))
+          : templates
+      }
+    })
+    .filter((group) => group.templates.length > 0)
 }
 
 /** The template's name, or "Name 2", "Name 3"… when a bot already has it. */

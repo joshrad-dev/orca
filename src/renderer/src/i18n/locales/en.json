@@ -20828,6 +20828,7 @@
         "actions": {
           "addFirstProject": "Add your first project",
           "continue": "Continue",
+          "continueAnyway": "Continue anyway",
           "getStarted": "Get started",
           "openingAddProject": "Opening Add Project..."
         },
@@ -20943,6 +20944,7 @@
           "geminiCli": "Gemini CLI"
         },
         "otherHeading": "Other providers",
+        "noProviderWarning": "Your bots need an AI account to work. You can add one later in Settings.",
         "summary": {
           "connected": "{{count}} connected",
           "installing": "{{count}} installing",

@@ -49,21 +49,40 @@ export default function OnboardingFlow({
         : stepCopy[currentStep.id]
   const shouldShowSetUpLater = currentStep.id !== 'notifications'
   const shouldShowFooterBusy = Boolean(busyLabel)
+  const [connectedProviderCount, setConnectedProviderCount] = useState<number | null>(null)
+  const [noProviderWarningRequested, setNoProviderWarningRequested] = useState(false)
+  const noProviderConnected = currentStep.id === 'ai_providers' && connectedProviderCount === 0
+  const showNoProviderWarning = noProviderConnected && noProviderWarningRequested
   const footerPrimaryLabel =
     busyLabel ??
-    (currentStep.id === 'notifications'
-      ? flow.useCase === 'everyday'
-        ? t('components.onboarding.flow.actions.getStarted', 'Get started')
-        : !flow.hasSelectedWorkspace
-          ? t('components.onboarding.flow.actions.addFirstProject', 'Add your first project')
-          : t('components.onboarding.flow.actions.continue', 'Continue')
-      : t('components.onboarding.flow.actions.continue', 'Continue'))
+    (showNoProviderWarning
+      ? t('components.onboarding.flow.actions.continueAnyway', 'Continue anyway')
+      : currentStep.id === 'notifications'
+        ? flow.useCase === 'everyday'
+          ? t('components.onboarding.flow.actions.getStarted', 'Get started')
+          : !flow.hasSelectedWorkspace
+            ? t('components.onboarding.flow.actions.addFirstProject', 'Add your first project')
+            : t('components.onboarding.flow.actions.continue', 'Continue')
+        : t('components.onboarding.flow.actions.continue', 'Continue'))
   const languageOffer = useOnboardingLanguageOffer(onboarding.lastCompletedStep)
   const [languagePickerOpen, setLanguagePickerOpen] = useState(false)
   const [skipConfirmOpen, setSkipConfirmOpen] = useState(false)
   const [subDialogOpen, setSubDialogOpen] = useState(false)
   const skipConfirmAdvancedViaRef = useRef<'button' | 'keyboard'>('button')
   const { next: flowNext, dismissOnboarding: flowDismissOnboarding } = flow
+
+  // First Continue with nothing connected only warns; the second one proceeds.
+  const advance = useCallback(
+    (advancedVia: 'button' | 'keyboard') => {
+      if (noProviderConnected && !noProviderWarningRequested) {
+        setNoProviderWarningRequested(true)
+        return
+      }
+      setNoProviderWarningRequested(false)
+      void flowNext(advancedVia)
+    },
+    [flowNext, noProviderConnected, noProviderWarningRequested]
+  )
 
   const requestSkipConfirmation = useCallback(
     (advancedVia: 'button' | 'keyboard') => {
@@ -97,11 +116,11 @@ export default function OnboardingFlow({
         return
       }
       event.preventDefault()
-      void flowNext('keyboard')
+      advance('keyboard')
     }
     addAppKeyListener('keydown', onKeyDown)
     return () => removeAppKeyListener('keydown', onKeyDown)
-  }, [flowNext, languagePickerOpen, skipConfirmOpen, subDialogOpen])
+  }, [advance, languagePickerOpen, skipConfirmOpen, subDialogOpen])
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent): void => {
@@ -237,6 +256,7 @@ export default function OnboardingFlow({
                 <AiProvidersStep
                   detectedSet={flow.detectedSet}
                   onDialogOpenChange={setSubDialogOpen}
+                  onConnectedCountChange={setConnectedProviderCount}
                 />
               )}
               {currentStep.id === 'agent_surface' && (
@@ -288,6 +308,18 @@ export default function OnboardingFlow({
               )}
             </div>
 
+            {showNoProviderWarning ? (
+              <p
+                role="alert"
+                className="mt-4 rounded-lg border border-status-warning-border bg-status-warning-background px-3.5 py-2 text-xs text-status-warning-text"
+              >
+                {t(
+                  'components.onboarding.aiProviders.noProviderWarning',
+                  'Your bots need an AI account to work. You can add one later in Settings.'
+                )}
+              </p>
+            ) : null}
+
             <OnboardingFooter
               shouldShowSetUpLater={shouldShowSetUpLater}
               busyLabel={busyLabel}
@@ -298,7 +330,7 @@ export default function OnboardingFlow({
               primaryBusy={shouldShowFooterBusy}
               primaryLabel={footerPrimaryLabel}
               shortcutModifierLabel={continueShortcutModifierLabel}
-              onPrimary={() => void flow.next()}
+              onPrimary={() => advance('button')}
             />
           </div>
         </section>

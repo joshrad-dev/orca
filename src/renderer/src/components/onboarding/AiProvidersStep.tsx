@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { ChevronDown } from 'lucide-react'
 import { cn } from '@/lib/class-names'
 import { useTranslate } from '@/i18n/use-translate'
@@ -26,11 +26,13 @@ import { AiProviderRow } from './AiProviderRow'
 type AiProvidersStepProps = {
   detectedSet: Set<TuiAgent>
   onDialogOpenChange?: (open: boolean) => void
+  onConnectedCountChange?: (count: number) => void
 }
 
 export function AiProvidersStep({
   detectedSet,
-  onDialogOpenChange
+  onDialogOpenChange,
+  onConnectedCountChange
 }: AiProvidersStepProps): React.JSX.Element {
   const t = useTranslate()
   const accounts = useOnboardingProviderAccounts(onDialogOpenChange)
@@ -56,6 +58,10 @@ export function AiProvidersStep({
   const connectedCount = Object.values(accounts.connections).filter(
     (entry) => entry?.connected
   ).length
+  useEffect(() => {
+    onConnectedCountChange?.(connectedCount)
+  }, [connectedCount, onConnectedCountChange])
+
   const installingCount = installingAgents.size
   const queuedCount = accounts.signInQueue.length
   const activeAgentLabel = accounts.activeSignIn

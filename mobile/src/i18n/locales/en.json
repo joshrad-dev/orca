@@ -1553,7 +1553,8 @@
       "useModel": "Use {{label}}",
       "use": "Use",
       "deleteModel": "Delete {{label}}",
-      "downloadModel": "Download {{label}}"
+      "downloadModel": "Download {{label}}",
+      "builtIn": "Built in"
     },
     "workspaceDetailPlaceholder": {
       "title": "No workspace open",

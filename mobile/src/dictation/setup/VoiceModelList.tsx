@@ -34,23 +34,31 @@ function formatSize(bytes: number | null | undefined, t: Translate): string {
   })
 }
 
+function isBuiltInHostModel(model: MobileSpeechModel): boolean {
+  return model.provider !== 'openai' && !model.sizeBytes
+}
+
 function modelMeta(model: MobileSpeechModel, t: Translate): string {
   if (model.provider === 'openai') {
     return 'OpenAI API'
   }
+  const builtIn = isBuiltInHostModel(model)
+  const sizeLabel = builtIn
+    ? t('components.voiceModelList.builtIn', 'Built in')
+    : formatSize(model.sizeBytes, t)
   const inFlight = isModelInFlight(model)
   if (inFlight && model.progress != null) {
     return t('components.voiceModelList.modelProgress', '{{size}} · {{progress}}%', {
-      size: formatSize(model.sizeBytes, t),
+      size: sizeLabel,
       progress: Math.round(model.progress * 100).toLocaleString(getUiIntlLocale())
     })
   }
   if (model.status === 'extracting') {
     return t('components.voiceModelList.modelExtracting', '{{size}} · extracting…', {
-      size: formatSize(model.sizeBytes, t)
+      size: sizeLabel
     })
   }
-  return formatSize(model.sizeBytes, t)
+  return sizeLabel
 }
 
 // Share model size/progress/recommendation/selection/download/delete rows between setup and Voice settings.
@@ -126,8 +134,8 @@ export function VoiceModelList({
                         )}
                       </Pressable>
                     )}
-                    {/* A cloud model has nothing on this computer to delete. */}
-                    {model.provider === 'openai' ? null : (
+                    {/* Cloud and OS-managed models have no downloaded files on the host to delete. */}
+                    {model.provider === 'openai' || isBuiltInHostModel(model) ? null : (
                       <Pressable
                         style={({ pressed }) => [
                           styles.iconButton,

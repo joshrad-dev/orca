@@ -20924,26 +20924,23 @@
       },
       "aiProviders": {
         "featured": {
-          "claude": {
-            "label": "Claude",
-            "subtitle": "Anthropic · Claude Pro, Max, or API"
-          },
           "chatgpt": {
             "label": "ChatGPT",
-            "subtitle": "OpenAI · ChatGPT Plus, Pro, or API"
+            "subtitle": "ChatGPT Plus, Pro, or Business subscription"
           },
-          "antigravity": {
-            "label": "Google (Antigravity)",
-            "subtitle": "Google · Gemini & Antigravity account"
+          "claude": {
+            "label": "Claude",
+            "subtitle": "Claude Pro, Max, Ultra, or Business subscription"
           },
-          "opencode2": {
-            "label": "OpenCode 2",
-            "subtitle": "OpenCode 2 · Multi-model providers & API keys"
+          "gemini": {
+            "label": "Gemini",
+            "subtitle": "Google account or Google AI Pro"
           }
         },
         "other": {
           "oneClickInstall": "One-click install & sign in",
-          "cliSetup": "Install & sign in via setup terminal"
+          "cliSetup": "Install & sign in via setup terminal",
+          "geminiCli": "Gemini CLI"
         },
         "otherHeading": "Other providers",
         "summary": {
@@ -20959,7 +20956,7 @@
           "signingIn": "Waiting for you to finish signing in…",
           "queued": "Installed · queued to sign in next.",
           "readyToSignIn": "Installed on this computer · ready to sign in.",
-          "downloadNote": "Downloads CLI (~{{size}} MB), then opens sign-in."
+          "downloadNote": "Downloads {{provider}} (~{{size}} MB), then opens sign-in."
         },
         "actions": {
           "add": "Add",

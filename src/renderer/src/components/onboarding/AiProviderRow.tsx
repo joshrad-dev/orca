@@ -181,7 +181,7 @@ export function AiProviderRow({
         <div className="flex items-start justify-between gap-3">
           <div className="flex min-w-0 items-start gap-3">
             <div className="mt-0.5 grid size-9 shrink-0 place-items-center rounded-lg border border-border bg-muted/40">
-              <AgentIcon agent={provider.agent} size={20} />
+              <AgentIcon agent={provider.iconAgent ?? provider.agent} size={20} />
             </div>
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">

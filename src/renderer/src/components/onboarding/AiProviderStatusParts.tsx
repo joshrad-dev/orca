@@ -100,8 +100,8 @@ export function AiProviderStatusLine({
       <p className="text-xs text-muted-foreground">
         {t(
           'components.onboarding.aiProviders.status.downloadNote',
-          'Downloads CLI (~{{size}} MB), then opens sign-in.',
-          { size: downloadSizeMb }
+          'Downloads {{provider}} (~{{size}} MB), then opens sign-in.',
+          { provider: label, size: downloadSizeMb }
         )}
       </p>
     )

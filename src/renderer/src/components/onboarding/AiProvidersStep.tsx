@@ -108,7 +108,7 @@ export function AiProvidersStep({
         </div>
       ) : null}
 
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid gap-3">
         {FEATURED_AI_PROVIDERS.map((provider) => (
           <AiProviderRow
             key={provider.agent}

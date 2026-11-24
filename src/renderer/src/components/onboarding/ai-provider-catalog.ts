@@ -15,22 +15,14 @@ export type OnboardingAiProvider = {
   managedInstall: boolean
   /** Sign-in mechanism: browser OAuth via Orca accounts IPC, or CLI command in an inline terminal. */
   signInKind: 'claude' | 'codex' | 'antigravity' | 'cli'
+  /** Icon override when the consumer brand differs from the runtime (Antigravity → Gemini). */
+  iconAgent?: BotAgent
   getLabel: (t: Translate) => string
   getSubtitle: (t: Translate) => string
 }
 
+// Featured order is also the first-bot default preference in Simple Bots mode.
 export const FEATURED_AI_PROVIDERS: readonly OnboardingAiProvider[] = [
-  {
-    agent: 'claude',
-    managedInstall: true,
-    signInKind: 'claude',
-    getLabel: (t) => t('components.onboarding.aiProviders.featured.claude.label', 'Claude'),
-    getSubtitle: (t) =>
-      t(
-        'components.onboarding.aiProviders.featured.claude.subtitle',
-        'Anthropic · Claude Pro, Max, or API'
-      )
-  },
   {
     agent: 'codex',
     managedInstall: true,
@@ -39,35 +31,36 @@ export const FEATURED_AI_PROVIDERS: readonly OnboardingAiProvider[] = [
     getSubtitle: (t) =>
       t(
         'components.onboarding.aiProviders.featured.chatgpt.subtitle',
-        'OpenAI · ChatGPT Plus, Pro, or API'
+        'ChatGPT Plus, Pro, or Business subscription'
+      )
+  },
+  {
+    agent: 'claude',
+    managedInstall: true,
+    signInKind: 'claude',
+    getLabel: (t) => t('components.onboarding.aiProviders.featured.claude.label', 'Claude'),
+    getSubtitle: (t) =>
+      t(
+        'components.onboarding.aiProviders.featured.claude.subtitle',
+        'Claude Pro, Max, Ultra, or Business subscription'
       )
   },
   {
     agent: 'antigravity',
     managedInstall: true,
     signInKind: 'antigravity',
-    getLabel: (t) =>
-      t('components.onboarding.aiProviders.featured.antigravity.label', 'Google (Antigravity)'),
+    iconAgent: 'gemini',
+    getLabel: (t) => t('components.onboarding.aiProviders.featured.gemini.label', 'Gemini'),
     getSubtitle: (t) =>
       t(
-        'components.onboarding.aiProviders.featured.antigravity.subtitle',
-        'Google · Gemini & Antigravity account'
-      )
-  },
-  {
-    agent: 'opencode2',
-    managedInstall: true,
-    signInKind: 'cli',
-    getLabel: (t) => t('components.onboarding.aiProviders.featured.opencode2.label', 'OpenCode 2'),
-    getSubtitle: (t) =>
-      t(
-        'components.onboarding.aiProviders.featured.opencode2.subtitle',
-        'OpenCode 2 · Multi-model providers & API keys'
+        'components.onboarding.aiProviders.featured.gemini.subtitle',
+        'Google account or Google AI Pro'
       )
   }
 ]
 
 const MANAGED_OTHER_AGENTS: readonly BotAgent[] = [
+  'opencode2',
   'opencode',
   'copilot',
   'cursor',
@@ -98,7 +91,11 @@ function buildOtherProvider(agent: BotAgent, managedInstall: boolean): Onboardin
     agent,
     managedInstall,
     signInKind: 'cli',
-    getLabel: () => displayName,
+    // The featured Antigravity card is titled "Gemini", so the Gemini CLI row needs its own name.
+    getLabel: (t) =>
+      agent === 'gemini'
+        ? t('components.onboarding.aiProviders.other.geminiCli', 'Gemini CLI')
+        : displayName,
     getSubtitle: (t) =>
       managedInstall
         ? t(

@@ -90,16 +90,32 @@ private let fallbackSpeechFormat = AVAudioFormat(
   interleaved: false
 )!
 
+// Canonical default regions when a bare ISO-639-1 code doesn't match Locale.current.
+private let defaultRegionalLocales: [String: String] = [
+  "de": "de-DE",
+  "en": "en-US",
+  "es": "es-ES",
+  "fr": "fr-FR",
+  "it": "it-IT",
+  "pt": "pt-BR",
+  "zh": "zh-CN"
+]
+
 @available(macOS 26.0, *)
 private func resolveSupportedLocale(_ requested: Locale) async -> Locale? {
   let wanted = languageCode(for: requested)
   // Prefer the system locale when the caller passed a bare language code (e.g. "en" -> "en-US").
-  if requested.region == nil,
-     let wanted,
-     languageCode(for: Locale.current) == wanted,
-     let currentMatch = await SpeechTranscriber.supportedLocale(equivalentTo: Locale.current)
-  {
-    return currentMatch
+  if requested.region == nil, let wanted {
+    if languageCode(for: Locale.current) == wanted,
+       let currentMatch = await SpeechTranscriber.supportedLocale(equivalentTo: Locale.current)
+    {
+      return currentMatch
+    }
+    if let defaultId = defaultRegionalLocales[wanted],
+       let defaultMatch = await SpeechTranscriber.supportedLocale(equivalentTo: Locale(identifier: defaultId))
+    {
+      return defaultMatch
+    }
   }
   if let matched = await SpeechTranscriber.supportedLocale(equivalentTo: requested) {
     return matched
@@ -140,7 +156,26 @@ private func ensureLocaleAssetsInstalled(
   transcriber: SpeechTranscriber,
   reportProgress: Bool
 ) async throws {
-  _ = try? await AssetInventory.reserve(locale: locale)
+  let targetId = locale.identifier(.bcp47)
+  let reserved = await AssetInventory.reservedLocales
+  if !reserved.contains(where: { $0.identifier(.bcp47) == targetId }) {
+    // Apple caps reservations at 5 locales per app; free an older one before reserving a new locale.
+    let currentId = Locale.current.identifier(.bcp47)
+    var remaining = reserved.count
+    for old in reserved where old.identifier(.bcp47) != targetId && old.identifier(.bcp47) != currentId {
+      if remaining < 5 { break }
+      await AssetInventory.release(reservedLocale: old)
+      remaining -= 1
+    }
+    if remaining >= 5 {
+      for old in reserved where old.identifier(.bcp47) != targetId {
+        await AssetInventory.release(reservedLocale: old)
+        remaining -= 1
+        if remaining < 5 { break }
+      }
+    }
+    _ = try? await AssetInventory.reserve(locale: locale)
+  }
   let status = await AssetInventory.status(forModules: [transcriber])
   if status != .installed,
      let request = try await AssetInventory.assetInstallationRequest(supporting: [transcriber])

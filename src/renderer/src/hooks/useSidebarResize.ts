@@ -20,6 +20,9 @@ type UseSidebarResizeOptions<T extends HTMLElement> = {
    *  ended at, or null when it ended where it started. `setWidth` alone skips a drag that ends at the
    *  current size. */
   onResizeEnd?: (movedTo: number | null) => void
+  /** Dragging past this unclamped size collapses the panel while preserving its previous saved width. */
+  collapseThreshold?: number
+  onCollapse?: () => void
 }
 
 type UseSidebarResizeResult<T extends HTMLElement> = {
@@ -72,7 +75,9 @@ export function useSidebarResize<T extends HTMLElement>({
   measureStartSize,
   measureMaxSize,
   applyRenderedSize,
-  onResizeEnd
+  onResizeEnd,
+  collapseThreshold,
+  onCollapse
 }: UseSidebarResizeOptions<T>): UseSidebarResizeResult<T> {
   const containerRef = useRef<T | null>(null)
   const isResizingRef = useRef(false)
@@ -157,8 +162,27 @@ export function useSidebarResize<T extends HTMLElement>({
         return
       }
 
+      const pointer = axis === 'y' ? event.clientY : event.clientX
+      if (collapseThreshold !== undefined && onCollapse) {
+        const rawWidth = startWidthRef.current + (pointer - startXRef.current) * deltaSign
+        if (rawWidth < collapseThreshold) {
+          isResizingRef.current = false
+          setIsResizing(false)
+          if (frameRef.current !== null) {
+            cancelAnimationFrame(frameRef.current)
+            frameRef.current = null
+          }
+          resetDocumentStyles()
+          draftWidthRef.current = width
+          applyRenderedWidth(width)
+          onDraftWidthChange?.(width)
+          onCollapse()
+          return
+        }
+      }
+
       const nextWidth = getNextSidebarResizeWidth({
-        clientX: axis === 'y' ? event.clientY : event.clientX,
+        clientX: pointer,
         startX: startXRef.current,
         startWidth: startWidthRef.current,
         deltaSign,
@@ -180,7 +204,18 @@ export function useSidebarResize<T extends HTMLElement>({
         onDraftWidthChange?.(draftWidthRef.current)
       })
     },
-    [applyRenderedWidth, axis, deltaSign, maxWidth, minWidth, onDraftWidthChange]
+    [
+      applyRenderedWidth,
+      axis,
+      collapseThreshold,
+      deltaSign,
+      maxWidth,
+      minWidth,
+      onCollapse,
+      onDraftWidthChange,
+      resetDocumentStyles,
+      width
+    ]
   )
 
   // Stable listeners read the latest handlers, so a re-render mid-drag neither tears the gesture down nor leaves it on stale props.

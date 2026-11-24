@@ -5,6 +5,7 @@ import { runNativeChatSplitTarget } from '../routing/native-chat-layout-actions'
 import { isBotChatTab } from '../../../bots/bot-workspace'
 import type { Tab, TabGroup } from '../../../../../../shared/workspace-layout/tab-groups/tab-types'
 import { useTranslate } from '@/i18n/use-translate'
+import { getAppShellMode } from '@/app-shell/simple-mode/app-shell-mode-store'
 
 const EMPTY_TABS: Tab[] = []
 const EMPTY_GROUPS: TabGroup[] = []
@@ -28,10 +29,18 @@ export function useStructuredChatPaneActions(tabId: string, worktreeId: string, 
       ? t('auto.components.tab.bar.SortableTab.95db5f2f7d', 'Close tab')
       : t('auto.components.terminal.pane.TerminalContextMenu.8c17d6786d', 'Close Pane')
   return {
-    onSplitRight: () =>
-      runNativeChatSplitTarget({ kind: 'workspace-tab', unifiedTabId: tabId, groupId }, 'right'),
-    onSplitDown: () =>
-      runNativeChatSplitTarget({ kind: 'workspace-tab', unifiedTabId: tabId, groupId }, 'down'),
+    onSplitRight: () => {
+      if (getAppShellMode() === 'simple') {
+        return
+      }
+      runNativeChatSplitTarget({ kind: 'workspace-tab', unifiedTabId: tabId, groupId }, 'right')
+    },
+    onSplitDown: () => {
+      if (getAppShellMode() === 'simple') {
+        return
+      }
+      runNativeChatSplitTarget({ kind: 'workspace-tab', unifiedTabId: tabId, groupId }, 'down')
+    },
     canClosePane: canCloseChatPane(
       groups.length,
       groupTabs.find((tab) => tab.id === tabId)

@@ -16,6 +16,8 @@ import ClaudeAccountSwitchDialog from './components/provider-accounts/claude/Cla
 import { AppBackgroundServices } from './app-shell/AppBackgroundServices'
 import { AppRootSurfaces } from './app-shell/AppRootSurfaces'
 import { AppWorkspaceShell } from './app-shell/AppWorkspaceShell'
+import { useAppShellMode } from './app-shell/simple-mode/app-shell-mode-store'
+import { SimpleBotsShell } from './components/simple-bots-shell/SimpleBotsShell'
 import { WindowControls } from './app-shell/chrome/WindowControls'
 import {
   MAC_TRAFFIC_LIGHTS_WIDTH,
@@ -46,6 +48,8 @@ import { installActiveWorktreeRemovalSuccessor } from './lib/workspace/activatio
 import { useAppStore } from './store'
 
 function App(): React.JSX.Element {
+  const shellMode = useAppShellMode()
+  const isSimpleMode = shellMode === 'simple'
   const layout = useAppChromeLayout()
   const tilingWindowMode = useAppStore(
     (s) => supportsLinuxTilingWindowMode && s.settings?.linuxTilingWindowMode === true
@@ -112,10 +116,15 @@ function App(): React.JSX.Element {
           <LinkRoutingPreferenceDialogProvider>
             <AppBackgroundServices />
             <SpaceWindowStatePublisher />
-            <AppWorkspaceShell layout={layout} floatingWorkspace={floatingWorkspace} />
+            {isSimpleMode ? (
+              <SimpleBotsShell layout={layout} />
+            ) : (
+              <AppWorkspaceShell layout={layout} floatingWorkspace={floatingWorkspace} />
+            )}
             <AppRootSurfaces
               floatingWorkspace={floatingWorkspace}
               onboardingGate={onboardingGate}
+              simpleMode={isSimpleMode}
             />
             <BrowserWebAuthnAccountDialog />
             <BrowserExtensionInstallDialog />

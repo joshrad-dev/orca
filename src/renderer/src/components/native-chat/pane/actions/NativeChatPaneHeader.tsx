@@ -9,6 +9,7 @@ import { useShortcutKeyComboDetails } from '@/lib/keyboard/useShortcutLabel'
 import { agentForksConversations } from '../../../../../../shared/agent-launch/startup/agent-resume-argv'
 import type { NativeChatTabSession } from '../../../tab-bar/session-actions/tab-session-history-switch'
 import { useDocumentDarkTheme } from '@/hooks/theme/use-document-dark-theme'
+import { useAppShellMode } from '@/app-shell/simple-mode/app-shell-mode-store'
 import { useStructuredChatPaneActions } from './use-structured-chat-pane-actions'
 import { NativeChatResumeInCliButton } from './NativeChatResumeInCliButton'
 import { useBotForWorkspace } from '../../../bots/bot-workspace'
@@ -43,6 +44,7 @@ export function NativeChatPaneHeader({
   handOff?: NativeChatHeaderHandOff
 }): React.JSX.Element {
   const t = useTranslate()
+  const isSimpleMode = useAppShellMode() === 'simple'
   const actions = useStructuredChatPaneActions(tabId, worktreeId, groupId)
   const tabHostId = useAppStore(
     (state) =>
@@ -80,7 +82,7 @@ export function NativeChatPaneHeader({
     >
       {homeBot ? <BotHomeBanner bot={homeBot} /> : null}
       <div className="pane-title-actions ml-auto flex shrink-0 items-center gap-0">
-        {handOff && focused ? (
+        {!isSimpleMode && handOff && focused ? (
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
@@ -102,50 +104,55 @@ export function NativeChatPaneHeader({
             </TooltipContent>
           </Tooltip>
         ) : null}
-        {!onBotPage && nativeChat.agent && agentForksConversations(nativeChat.agent) ? (
+        {!isSimpleMode &&
+        !onBotPage &&
+        nativeChat.agent &&
+        agentForksConversations(nativeChat.agent) ? (
           <NativeChatResumeInCliButton
             tabId={tabId}
             worktreeId={worktreeId}
             nativeChat={nativeChat}
           />
         ) : null}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              type="button"
-              variant="pane-title"
-              size="icon-xs"
-              aria-label={split}
-              data-contextual-tour-target={focused ? 'chat-pane-split-target' : undefined}
-              onClick={(event) => {
-                event.stopPropagation()
-                actions.onSplitRight()
-              }}
-            >
-              <SquareSplitVertical className="size-3" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side="bottom" sideOffset={4}>
-            <span className="inline-flex items-center gap-1.5">
-              <span>
-                {split}
-                {splitShortcutCombos.length > 0 ? ': ' : null}
+        {!isSimpleMode ? (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                type="button"
+                variant="pane-title"
+                size="icon-xs"
+                aria-label={split}
+                data-contextual-tour-target={focused ? 'chat-pane-split-target' : undefined}
+                onClick={(event) => {
+                  event.stopPropagation()
+                  actions.onSplitRight()
+                }}
+              >
+                <SquareSplitVertical className="size-3" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom" sideOffset={4}>
+              <span className="inline-flex items-center gap-1.5">
+                <span>
+                  {split}
+                  {splitShortcutCombos.length > 0 ? ': ' : null}
+                </span>
+                {splitShortcutCombos.map((shortcut, index) => (
+                  <Fragment key={JSON.stringify([shortcut.keys, shortcut.doubleTap])}>
+                    {index > 0 ? <span>{', '}</span> : null}
+                    <ShortcutKeyCombo
+                      keys={shortcut.keys}
+                      doubleTap={shortcut.doubleTap}
+                      className="gap-0.5"
+                      keyCapClassName="min-w-0 border-background/30 bg-background/10 px-1 py-0 text-3xs text-background shadow-none"
+                      separatorClassName="mx-0 text-3xs text-background/70"
+                    />
+                  </Fragment>
+                ))}
               </span>
-              {splitShortcutCombos.map((shortcut, index) => (
-                <Fragment key={JSON.stringify([shortcut.keys, shortcut.doubleTap])}>
-                  {index > 0 ? <span>{', '}</span> : null}
-                  <ShortcutKeyCombo
-                    keys={shortcut.keys}
-                    doubleTap={shortcut.doubleTap}
-                    className="gap-0.5"
-                    keyCapClassName="min-w-0 border-background/30 bg-background/10 px-1 py-0 text-3xs text-background shadow-none"
-                    separatorClassName="mx-0 text-3xs text-background/70"
-                  />
-                </Fragment>
-              ))}
-            </span>
-          </TooltipContent>
-        </Tooltip>
+            </TooltipContent>
+          </Tooltip>
+        ) : null}
         <NativeChatSettingsButton />
       </div>
     </div>

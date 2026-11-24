@@ -24,6 +24,8 @@ import { getGeneralEditorSearchDescriptors } from '../editor/general-editor-sear
 import { GENERAL_SUB_PAGE_ENTRY_ANCHORS } from '../general/general-setting-anchors'
 import { getGeneralSubPageTitle } from '../general/general-sub-pages'
 import { translate } from '@/i18n/i18n'
+import { useAppShellMode } from '@/app-shell/simple-mode/app-shell-mode-store'
+import { filterSettingsNavSectionsForMode } from './simple-mode-settings-filter'
 
 export function useSettingsNavigationModel(
   model: SettingsStoreModel,
@@ -51,7 +53,12 @@ export function useSettingsNavigationModel(
   )
 
   const displayedGitUsername = model.repos[0]?.gitUsername ?? ''
-  const baseNavSections = useSettingsNavigationMetadata()
+  const shellMode = useAppShellMode()
+  const allNavSections = useSettingsNavigationMetadata()
+  const baseNavSections = useMemo(
+    () => filterSettingsNavSectionsForMode(allNavSections, shellMode),
+    [allNavSections, shellMode]
+  )
   const { installed: orchestrationSkillInstalled, loading: orchestrationSkillLoading } =
     model.orchestrationSkill
   const {

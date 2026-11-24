@@ -30902,5 +30902,71 @@
     "moveLeft": "Move left",
     "moveRight": "Move right",
     "reset": "Reset tab order"
+  },
+  "simpleBots": {
+    "mode": {
+      "bots": "Bots",
+      "code": "Code",
+      "label": "Workspace mode"
+    },
+    "chat": {
+      "home": "Home",
+      "untitled": "New chat",
+      "fallbackTitle": "Chat"
+    },
+    "sidebar": {
+      "newChatWith": "New chat with {{name}}",
+      "collapseBot": "Collapse {{name}}",
+      "expandBot": "Expand {{name}}",
+      "waitingForReply": "Waiting for your reply",
+      "working": "Working",
+      "startChatting": "Start chatting with {{name}}",
+      "showMore": "Show {{count}} more",
+      "newBot": "New bot",
+      "browseTemplates": "Browse templates",
+      "search": "Search bots and chats",
+      "browseTemplatesAria": "Browse bot templates",
+      "emptyTitle": "No bots yet",
+      "emptyBody": "Create a bot to start chatting, scheduling reminders, or automating tasks.",
+      "mobile": "Mobile",
+      "openOnboarding": "Open onboarding",
+      "resize": "Resize bots sidebar"
+    },
+    "header": {
+      "openSidebar": "Open sidebar",
+      "openRightSidebar": "Open right sidebar"
+    },
+    "rightPanel": {
+      "resize": "Resize side panel",
+      "tabsLabel": "Bot panels",
+      "closeAria": "Close right sidebar",
+      "close": "Close sidebar"
+    },
+    "shell": {
+      "backToBots": "Back to bots",
+      "errorTitle": "The bots view hit an error.",
+      "errorDescription": "Retry the view or switch back to Code mode.",
+      "expandSidebar": "Expand bots sidebar",
+      "openingBot": "Opening {{name}}…",
+      "expandRightPanel": "Expand side panel"
+    },
+    "empty": {
+      "title": "Create your first bot",
+      "description": "Give a bot a job in plain English, schedule check-ins, and chat from desktop or your phone without touching terminals or Git."
+    },
+    "files": {
+      "openFailed": "Could not open file.",
+      "loading": "Loading…",
+      "emptyFolder": "Empty folder",
+      "readFailed": "Could not read files.",
+      "openFolder": "Open folder",
+      "heading": "Output files",
+      "refreshAria": "Refresh files",
+      "refresh": "Refresh",
+      "closeAria": "Close files",
+      "loadingForBot": "Loading {{name}}’s files…",
+      "emptyTitle": "No files yet",
+      "emptyBody": "Documents, spreadsheets, images, and other files {{name}} creates will show up here."
+    }
   }
 }

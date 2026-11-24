@@ -116,9 +116,10 @@ const OnboardingFlow = lazy(() => import('../components/onboarding/OnboardingFlo
 export const AppRootSurfaces = memo(function AppRootSurfaces(props: {
   floatingWorkspace: FloatingWorkspacePanelState
   onboardingGate: OnboardingGate
+  simpleMode?: boolean
 }): React.JSX.Element {
   const t = useTranslate()
-  const { floatingWorkspace, onboardingGate } = props
+  const { floatingWorkspace, onboardingGate, simpleMode = false } = props
   // Memoized: subscribe so a language change still repaints its labels.
   useTranslation()
   const languageReady = useLanguageReadiness((state) => state.ready)
@@ -147,7 +148,7 @@ export const AppRootSurfaces = memo(function AppRootSurfaces(props: {
 
   return (
     <>
-      {floatingWorkspace.shouldMountPanel ? (
+      {!simpleMode && floatingWorkspace.shouldMountPanel ? (
         <Suspense fallback={null}>
           <OverlayBoundary
             boundaryId="overlay.floating-workspace"
@@ -166,7 +167,7 @@ export const AppRootSurfaces = memo(function AppRootSurfaces(props: {
           </OverlayBoundary>
         </Suspense>
       ) : null}
-      {statusBarVisible ? (
+      {!simpleMode && statusBarVisible ? (
         <Suspense
           fallback={
             <div className="h-6 min-h-[24px] shrink-0 border-t border-border bg-[var(--bg-titlebar,var(--card))]" />

@@ -174,7 +174,7 @@ export function AiProvidersStep({
         open={modal !== null}
         onOpenChange={(open) => {
           if (!open) {
-            accounts.completeTerminalModal(false)
+            accounts.completeTerminalModal('cancelled')
           }
         }}
       >
@@ -248,7 +248,7 @@ export function AiProvidersStep({
                 worktreeId={`onboarding-provider-${modal.kind}-${modal.agent}`}
                 onCommandFinished={(exitCode) => {
                   if (exitCode === 0) {
-                    accounts.completeTerminalModal(true)
+                    accounts.completeTerminalModal('command-succeeded')
                   }
                 }}
               />
@@ -256,11 +256,11 @@ export function AiProvidersStep({
                 <Button
                   type="button"
                   variant="ghost"
-                  onClick={() => accounts.completeTerminalModal(false)}
+                  onClick={() => accounts.completeTerminalModal('cancelled')}
                 >
                   {t('components.onboarding.aiProviders.actions.cancel', 'Cancel')}
                 </Button>
-                <Button type="button" onClick={() => accounts.completeTerminalModal(true)}>
+                <Button type="button" onClick={() => accounts.completeTerminalModal('manual-done')}>
                   {modal.kind === 'install'
                     ? t(
                         'components.onboarding.aiProviders.dialog.continueToSignIn',

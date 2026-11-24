@@ -20974,6 +20974,10 @@
           "slashSignInDescription": "Once {{provider}} opens below, type {{slashCommand}} to sign in, then click Done.",
           "continueToSignIn": "Continue to sign in",
           "done": "Done"
+        },
+        "errors": {
+          "installNotDetected": "{{provider}} wasn't detected yet. Finish installing it and try again.",
+          "signInNotDetected": "Sign-in for {{provider}} wasn't detected yet. Try signing in again."
         }
       },
       "useCase": {

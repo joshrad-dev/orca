@@ -16,7 +16,11 @@ export function registerClaudeAccountHandlers(
   moveUnheldSessions: MoveUnheldClaudeSessions
 ): void {
   claudeAccounts.setWslSignInLinkOpener((signInLink) => openAccountSignInLink('claude', signInLink))
-  ipcMain.handle('claudeAccounts:list', () => claudeAccounts.listAccounts())
+  ipcMain.handle('claudeAccounts:list', (_event, args?: { includeSystemDefault?: boolean }) =>
+    args?.includeSystemDefault
+      ? claudeAccounts.listAccountsWithSystemDefault()
+      : claudeAccounts.listAccounts()
+  )
   ipcMain.handle(
     'claudeAccounts:add',
     (_event, args?: ClaudeAccountSelectionTarget & { copyLink?: boolean }) =>

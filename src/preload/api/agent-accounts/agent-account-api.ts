@@ -52,7 +52,7 @@ export type CodexAccountsApi = {
 }
 
 export type ClaudeAccountsApi = {
-  list: () => Promise<ClaudeRateLimitAccountsState>
+  list: (args?: { includeSystemDefault?: boolean }) => Promise<ClaudeRateLimitAccountsState>
   add: (args?: {
     runtime?: 'host' | 'wsl'
     wslDistro?: string | null

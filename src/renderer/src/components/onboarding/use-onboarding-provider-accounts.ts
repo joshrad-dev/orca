@@ -6,29 +6,28 @@ import { LOCAL_EXECUTION_HOST_ID } from '../../../../shared/execution-host/execu
 import { resolveHostAgentStartupShell } from '../../../../shared/shell/launch/windows-terminal-shell'
 import type { RuntimeClientTarget } from '../../../../shared/remote-runtime/host-catalog/runtime-client-target'
 import type { BotAgent } from '../../../../shared/bot-types'
-import {
-  getClaudeAccountErrorDescription,
-  getCodexAccountErrorDescription,
-  isClaudeAccountCancellation,
-  isCodexAccountCancellation
-} from '@/lib/provider-accounts/provider-account-action-errors'
 import { useAntigravityChatSignIn } from '@/components/provider-accounts/use-antigravity-chat-sign-in'
 import {
   cancelAntigravityChatSignIn,
   startAntigravityChatSignIn
 } from '@/runtime/provider-accounts/sign-in/antigravity-chat-sign-in-status'
+import { translate } from '@/i18n/i18n'
 import {
-  extractClaudeConnection,
-  extractCodexConnection,
   findOnboardingAiProvider,
+  getOnboardingProviderLabel,
+  resolveProviderCliInstallCommand,
+  resolveProviderCliSignIn
+} from './ai-provider-catalog'
+import {
   mergeObservedProviderPlans,
   readInitialProviderConnections,
-  resolveProviderCliInstallCommand,
-  resolveProviderCliSignIn,
-  type ProviderConnectionInfo
-} from './ai-provider-catalog'
+  runManagedOAuthSignIn,
+  verifyTerminalSignIn,
+  type ProviderConnectionInfo,
+  type TerminalModalOutcome
+} from './onboarding-provider-connections'
 
-export type { ProviderConnectionInfo }
+export type { ProviderConnectionInfo, TerminalModalOutcome }
 
 const LOCAL_OWNER: RuntimeClientTarget = { kind: 'local' }
 
@@ -143,61 +142,21 @@ export function useOnboardingProviderAccounts(onDialogOpenChange?: (open: boolea
       const provider = findOnboardingAiProvider(request.agent)
       setActiveSignIn(request)
 
-      if (provider.signInKind === 'claude') {
-        void window.api.claudeAccounts
-          .add({ runtime: 'host', wslDistro: null, copyLink: false })
-          .then((result) => {
-            if (!mountedRef.current) {
-              return
-            }
-            const nextClaude = extractClaudeConnection(result) ?? { connected: true }
-            setConnections((prev) => ({ ...prev, claude: nextClaude }))
+      if (provider.signInKind === 'claude' || provider.signInKind === 'codex') {
+        const oauthAgent = provider.signInKind
+        void runManagedOAuthSignIn(oauthAgent).then((result) => {
+          if (!mountedRef.current) {
+            return
+          }
+          if (result.kind === 'connected') {
+            setConnections((prev) => ({ ...prev, [oauthAgent]: result.connection }))
             void fetchSettings()
             void refreshRateLimits()
-          })
-          .catch((error: unknown) => {
-            if (!mountedRef.current || isClaudeAccountCancellation(error)) {
-              return
-            }
-            setSignInErrors((prev) => ({
-              ...prev,
-              claude: getClaudeAccountErrorDescription(error)
-            }))
-          })
-          .finally(() => {
-            if (mountedRef.current) {
-              setActiveSignIn((curr) => (curr?.agent === 'claude' ? null : curr))
-            }
-          })
-        return
-      }
-
-      if (provider.signInKind === 'codex') {
-        void window.api.codexAccounts
-          .add({ runtime: 'host', wslDistro: null })
-          .then((result) => {
-            if (!mountedRef.current) {
-              return
-            }
-            const nextCodex = extractCodexConnection(result) ?? { connected: true }
-            setConnections((prev) => ({ ...prev, codex: nextCodex }))
-            void fetchSettings()
-            void refreshRateLimits()
-          })
-          .catch((error: unknown) => {
-            if (!mountedRef.current || isCodexAccountCancellation(error)) {
-              return
-            }
-            setSignInErrors((prev) => ({
-              ...prev,
-              codex: getCodexAccountErrorDescription(error)
-            }))
-          })
-          .finally(() => {
-            if (mountedRef.current) {
-              setActiveSignIn((curr) => (curr?.agent === 'codex' ? null : curr))
-            }
-          })
+          } else if (result.kind === 'error') {
+            setSignInErrors((prev) => ({ ...prev, [oauthAgent]: result.message }))
+          }
+          setActiveSignIn((curr) => (curr?.agent === oauthAgent ? null : curr))
+        })
         return
       }
 
@@ -263,37 +222,73 @@ export function useOnboardingProviderAccounts(onDialogOpenChange?: (open: boolea
       if (!command) {
         return
       }
+      setSignInErrors((prev) => {
+        if (!prev[agent]) {
+          return prev
+        }
+        const next = { ...prev }
+        delete next[agent]
+        return next
+      })
       setTerminalModal({ kind: 'install', agent, command })
     },
     [platform]
   )
 
   const completeTerminalModal = useCallback(
-    (markConnected: boolean) => {
+    (outcome: TerminalModalOutcome) => {
       const current = terminalModal
       setTerminalModal(null)
       if (!current) {
         return
       }
       if (current.kind === 'install') {
-        void refreshDetectedAgents(undefined, { wakeWslDistro: true, userInitiated: true })
-        if (markConnected) {
-          enqueueSignIn({ agent: current.agent })
-        }
+        void refreshDetectedAgents(undefined, { wakeWslDistro: true, userInitiated: true }).then(
+          (detected) => {
+            if (!mountedRef.current || outcome === 'cancelled') {
+              return
+            }
+            if (detected.includes(current.agent)) {
+              enqueueSignIn({ agent: current.agent })
+              return
+            }
+            setSignInErrors((prev) => ({
+              ...prev,
+              [current.agent]: translate(
+                'components.onboarding.aiProviders.errors.installNotDetected',
+                "{{provider}} wasn't detected yet. Finish installing it and try again.",
+                { provider: getOnboardingProviderLabel(current.agent) }
+              )
+            }))
+          }
+        )
         return
       }
-      if (markConnected) {
-        setConnections((prev) => ({
-          ...prev,
-          [current.agent]: prev[current.agent]?.connected
-            ? prev[current.agent]
-            : { connected: true }
-        }))
-        void refreshDetectedAgents(undefined, { wakeWslDistro: true })
-      }
       setActiveSignIn((curr) => (curr?.agent === current.agent ? null : curr))
+      if (outcome === 'cancelled') {
+        return
+      }
+      void verifyTerminalSignIn(current.agent, outcome).then((result) => {
+        if (!mountedRef.current) {
+          return
+        }
+        if (result.kind === 'connected') {
+          setConnections((prev) => ({
+            ...prev,
+            [current.agent]: prev[current.agent]?.connected
+              ? { ...prev[current.agent], ...result.connection }
+              : result.connection
+          }))
+          if (result.refreshRateLimits) {
+            void refreshRateLimits()
+          }
+        } else if (result.kind === 'not-detected') {
+          setSignInErrors((prev) => ({ ...prev, [current.agent]: result.error }))
+        }
+        void refreshDetectedAgents(undefined, { wakeWslDistro: true })
+      })
     },
-    [enqueueSignIn, refreshDetectedAgents, terminalModal]
+    [enqueueSignIn, refreshDetectedAgents, refreshRateLimits, terminalModal]
   )
 
   const resolvedConnections = useMemo(

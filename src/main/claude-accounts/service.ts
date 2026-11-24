@@ -3,6 +3,7 @@ import type {
   ClaudeRateLimitAccountsState,
   ClaudeSignInRequest
 } from '../../shared/agent-accounts/managed-account-types'
+import { claudeStateFileAsync, readClaudeFolderLoginAsync } from './sign-in/claude-account-folder'
 import { ClaudeAccountRegistration } from './sign-in/claude-account-registration'
 import {
   ClaudeAccountSelection,
@@ -64,6 +65,29 @@ export class ClaudeAccountService {
 
   listAccounts(): ClaudeRateLimitAccountsState {
     return this.selection.list()
+  }
+
+  /** Lists accounts and reads the unsaved System default login asynchronously for onboarding. */
+  async listAccountsWithSystemDefault(): Promise<ClaudeRateLimitAccountsState> {
+    const state = this.selection.list()
+    if (state.systemDefaultEmail) {
+      return state
+    }
+    const stateFile = await claudeStateFileAsync(this.runtimeAuth.router.userConfigDir())
+    const systemDefault = await readClaudeFolderLoginAsync(stateFile)
+    if (!systemDefault) {
+      return state
+    }
+    return {
+      ...state,
+      systemDefaultEmail: systemDefault.email,
+      ...(systemDefault.organizationUuid
+        ? { systemDefaultOrganizationUuid: systemDefault.organizationUuid }
+        : {}),
+      ...(this.runtimeAuth.router.copiedLoginIntoSystemDefault()
+        ? { systemDefaultMayBeCopied: true }
+        : {})
+    }
   }
 
   addAccount(

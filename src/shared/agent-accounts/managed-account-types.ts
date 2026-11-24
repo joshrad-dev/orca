@@ -126,7 +126,7 @@ export type ClaudeRateLimitAccountsState = {
   accounts: ClaudeManagedAccountSummary[]
   activeAccountId: string | null
   activeAccountIdsByRuntime?: ClaudeManagedAccountRuntimeSelection
-  /** The login System default holds, when the host can read it. */
+  /** The login System default holds, when the host can read it and accounts exist (or when requested explicitly). */
   systemDefaultEmail?: string
   systemDefaultOrganizationUuid?: string
   /** The host folder System default launches use, when accounts exist. */

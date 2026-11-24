@@ -92,7 +92,8 @@ export class ClaudeAccountSelection {
       .sort((a, b) => b.updatedAt - a.updatedAt)
     const userConfigDir = this.runtimeAuth.router.userConfigDir()
     // Throttle parsing of the large, frequently rewritten personal state file.
-    const systemDefault = readClaudeFolderLogin(claudeStateFile(userConfigDir), 5_000)
+    const systemDefault =
+      accounts.length > 0 ? readClaudeFolderLogin(claudeStateFile(userConfigDir), 5_000) : null
     return {
       accounts,
       activeAccountId: selection.host,

@@ -21,6 +21,7 @@ import {
 import {
   mergeObservedProviderPlans,
   readInitialProviderConnections,
+  readProviderConnection,
   runManagedOAuthSignIn,
   verifyTerminalSignIn,
   type ProviderConnectionInfo,
@@ -130,6 +131,18 @@ export function useOnboardingProviderAccounts(onDialogOpenChange?: (open: boolea
     })
     setSignInQueue((prev) =>
       prev.some((item) => item.agent === request.agent) ? prev : [...prev, request]
+    )
+  }, [])
+
+  // Sign-ins made outside the queue (Gemini's other sign-in methods) are read back from account state.
+  const refreshConnection = useCallback((agent: BotAgent) => {
+    void readProviderConnection(agent).then(
+      (connection) => {
+        if (mountedRef.current && connection?.connected) {
+          setConnections((prev) => ({ ...prev, [agent]: connection }))
+        }
+      },
+      () => undefined
     )
   }, [])
 
@@ -305,6 +318,7 @@ export function useOnboardingProviderAccounts(onDialogOpenChange?: (open: boolea
     platform,
     enqueueSignIn,
     removeFromQueue,
+    refreshConnection,
     cancelActiveSignIn,
     openShellInstallModal,
     completeTerminalModal

@@ -4,6 +4,7 @@ import { cn } from '@/lib/class-names'
 import { useTranslate } from '@/i18n/use-translate'
 import { AgentIcon } from '@/components/agent/icons/AgentIcon'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { useManagedRuntimeInstall } from '@/runtime/hosts/installation/use-managed-runtime-install'
 import {
   cancelManagedRuntimeInstall,
@@ -37,6 +38,8 @@ export type AiProviderRowProps = {
   onRemoveFromQueue: (agent: BotAgent) => void
   onOpenShellInstall: (agent: BotAgent) => void
   onInstallingChange?: (agent: BotAgent, installing: boolean) => void
+  /** Offers the provider's other sign-in methods once it is installed and not yet connected. */
+  onOpenSignInOptions?: () => void
 }
 
 export function AiProviderRow({
@@ -52,7 +55,8 @@ export function AiProviderRow({
   onCancelSignIn,
   onRemoveFromQueue,
   onOpenShellInstall,
-  onInstallingChange
+  onInstallingChange,
+  onOpenSignInOptions
 }: AiProviderRowProps): React.JSX.Element {
   const t = useTranslate()
   const label = provider.getLabel(t)
@@ -216,6 +220,17 @@ export function AiProviderRow({
           errorText={errorText}
           label={label}
         />
+        {onOpenSignInOptions && useAntigravityServer && !isConnected && !isInstalling ? (
+          <Button
+            type="button"
+            variant="link-muted"
+            size="inlineText"
+            className="self-start"
+            onClick={onOpenSignInOptions}
+          >
+            {t('components.onboarding.aiProviders.actions.otherSignIn', 'Other ways to sign in')}
+          </Button>
+        ) : null}
       </div>
     )
   }

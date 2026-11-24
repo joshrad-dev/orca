@@ -22,6 +22,7 @@ import {
 } from './ai-provider-catalog'
 import { useOnboardingProviderAccounts } from './use-onboarding-provider-accounts'
 import { AiProviderRow } from './AiProviderRow'
+import { GeminiSignInOptionsDialog } from './GeminiSignInOptionsDialog'
 
 type AiProvidersStepProps = {
   detectedSet: Set<TuiAgent>
@@ -35,7 +36,12 @@ export function AiProvidersStep({
   onConnectedCountChange
 }: AiProvidersStepProps): React.JSX.Element {
   const t = useTranslate()
-  const accounts = useOnboardingProviderAccounts(onDialogOpenChange)
+  const [terminalDialogOpen, setTerminalDialogOpen] = useState(false)
+  const [geminiOptionsOpen, setGeminiOptionsOpen] = useState(false)
+  const accounts = useOnboardingProviderAccounts(setTerminalDialogOpen)
+  useEffect(() => {
+    onDialogOpenChange?.(terminalDialogOpen || geminiOptionsOpen)
+  }, [geminiOptionsOpen, onDialogOpenChange, terminalDialogOpen])
   const [showOther, setShowOther] = useState(false)
   const [installingAgents, setInstallingAgents] = useState<ReadonlySet<BotAgent>>(new Set())
 
@@ -131,9 +137,22 @@ export function AiProvidersStep({
             onRemoveFromQueue={accounts.removeFromQueue}
             onOpenShellInstall={accounts.openShellInstallModal}
             onInstallingChange={handleInstallingChange}
+            onOpenSignInOptions={
+              provider.agent === 'antigravity' ? () => setGeminiOptionsOpen(true) : undefined
+            }
           />
         ))}
       </div>
+
+      <GeminiSignInOptionsDialog
+        open={geminiOptionsOpen}
+        onOpenChange={(open) => {
+          setGeminiOptionsOpen(open)
+          if (!open) {
+            accounts.refreshConnection('antigravity')
+          }
+        }}
+      />
 
       <div className="overflow-hidden rounded-xl border border-border bg-card/50">
         <Collapsible open={showOther} onOpenChange={setShowOther}>

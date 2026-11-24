@@ -20963,7 +20963,8 @@
         "actions": {
           "add": "Add",
           "signIn": "Sign in",
-          "cancel": "Cancel"
+          "cancel": "Cancel",
+          "otherSignIn": "Other ways to sign in"
         },
         "dialog": {
           "installTitle": "Install {{provider}}",
@@ -20977,6 +20978,10 @@
         "errors": {
           "installNotDetected": "{{provider}} wasn't detected yet. Finish installing it and try again.",
           "signInNotDetected": "Sign-in for {{provider}} wasn't detected yet. Try signing in again."
+        },
+        "geminiOptions": {
+          "title": "Other ways to sign in",
+          "description": "Use a work account or a Gemini API key from your company instead of a personal Google account."
         }
       },
       "useCase": {

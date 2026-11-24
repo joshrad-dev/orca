@@ -23324,7 +23324,9 @@
           "auto": "Auto-detect",
           "rated": "The language you speak. Quality is rated for it.",
           "alwaysUses": "The language you speak. {{model}} always uses {{language}}.",
-          "detectsItself": "The language you speak. {{model}} detects it by itself."
+          "detectsItself": "The language you speak. {{model}} detects it by itself.",
+          "appleAuto": "Apple Speech doesn’t auto-detect languages — it uses your Mac’s locale unless you pick one.",
+          "appleUnsupported": "{{model}} doesn’t support {{language}}."
         },
         "modelUnload": {
           "cloud": "Cloud models run on the provider’s servers, so nothing stays loaded here.",

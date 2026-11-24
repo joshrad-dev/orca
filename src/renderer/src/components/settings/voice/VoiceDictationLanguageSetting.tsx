@@ -35,12 +35,24 @@ function describeLanguageSetting(
           { model: model.label }
         )
   }
-  if (model && language !== DICTATION_LANGUAGE_AUTO && !engineDictationLanguage(model, language)) {
+  if (model?.provider === 'apple' && language === DICTATION_LANGUAGE_AUTO) {
     return t(
-      'components.settings.voice.dictationLanguage.unsupported',
-      "{{model}} doesn't support {{language}}, so it detects the language itself.",
-      { model: model.label, language: languageDisplayName(language, intlLocale) }
+      'components.settings.voice.dictationLanguage.appleAuto',
+      'Apple Speech doesn’t auto-detect languages — it uses your Mac’s locale unless you pick one.'
     )
+  }
+  if (model && language !== DICTATION_LANGUAGE_AUTO && !engineDictationLanguage(model, language)) {
+    return model.provider === 'apple'
+      ? t(
+          'components.settings.voice.dictationLanguage.appleUnsupported',
+          '{{model}} doesn’t support {{language}}.',
+          { model: model.label, language: languageDisplayName(language, intlLocale) }
+        )
+      : t(
+          'components.settings.voice.dictationLanguage.unsupported',
+          "{{model}} doesn't support {{language}}, so it detects the language itself.",
+          { model: model.label, language: languageDisplayName(language, intlLocale) }
+        )
   }
   return t(
     'components.settings.voice.dictationLanguage.rated',

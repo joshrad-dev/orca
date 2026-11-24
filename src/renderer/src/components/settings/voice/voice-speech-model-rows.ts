@@ -20,7 +20,7 @@ export function isSpeechModelDownloading(state: SpeechModelState | undefined): b
 }
 
 export function speechModelTab(manifest: SpeechModelManifest): VoiceSpeechModelTab {
-  return manifest.provider === 'local' ? 'local' : 'cloud'
+  return manifest.provider === 'local' || manifest.provider === 'apple' ? 'local' : 'cloud'
 }
 
 /** A tab's rows: models for the language first, then ones that can't handle it, then retired downloads. */

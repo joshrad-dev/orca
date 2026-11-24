@@ -15,6 +15,12 @@ export function speechModelDescription(
       'Sends your audio to the service you set up.'
     )
   }
+  if (manifest.provider === 'apple') {
+    return t(
+      'components.settings.voice.models.about.appleSpeech',
+      'Built-in macOS speech recognition, kept up to date by Apple.'
+    )
+  }
   const languages = manifest.languages.length
   switch (manifest.id) {
     case 'parakeet-tdt-0.6b-v3-int8':

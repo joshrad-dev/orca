@@ -24,6 +24,10 @@ export const PARAKEET_V3_LANGUAGES: readonly string[] =
 export const NEMOTRON_DICTATION_LANGUAGES: readonly string[] =
   'ar bg cs da de en es et fi fr hi hr hu it ja ko nl pl pt ro ru sk sv tr uk vi zh'.split(' ')
 
+// Default languages supported by macOS 26+ SpeechTranscriber; runtime catalog narrows to the host's live list.
+export const APPLE_SPEECH_DEFAULT_LANGUAGES: readonly string[] =
+  'bn de en es fr gu hi it ja kn ko ks mai ml mr ne or pa pt ta te ur yue zh'.split(' ')
+
 /** The code to send the engine, or undefined to let it detect the language itself. */
 export function engineDictationLanguage(
   model: Pick<SpeechModelManifest, 'dictationLanguages'>,

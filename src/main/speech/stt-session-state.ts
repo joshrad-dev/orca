@@ -1,4 +1,5 @@
 import { voiceModelUnloadDelayMs } from '../../shared/speech/models/voice-model-unload'
+import type { AppleSpeechTranscriptionSession } from './apple-speech-transcription-session'
 import type { ModelManager } from './model-manager'
 import type { OpenAiTranscriptionSession } from './openai-transcription-client'
 import type { SttEventSink } from './stt-service'
@@ -31,13 +32,14 @@ export type SttSession = {
   owner: string
   streamId: string
   sink: SttEventSink
-  /** null for cloud models, which load no recognizer. */
+  /** null for cloud and Apple Speech models, which load no transcribe-cpp recognizer. */
   config: SttRecognizerConfig | null
   modelId: string
   /** Spellings this dictation's stream tells the engine to expect. */
   vocabulary: string[]
   engine: SttEngine | null
   cloud: OpenAiTranscriptionSession | null
+  apple: AppleSpeechTranscriptionSession | null
   phase: 'starting' | 'active' | 'stopping'
   stopPromise: Promise<void> | null
 }

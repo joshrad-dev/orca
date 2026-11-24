@@ -46,7 +46,11 @@ export function VoiceModelUnloadSetting({
   const t = useTranslate()
   const intlLocale = useIntlLocale()
   const labelId = useId()
-  const isCloudModel = selectedModel !== undefined && selectedModel.provider !== 'local'
+  const isCloudModel =
+    selectedModel !== undefined &&
+    (selectedModel.provider === 'openai' || selectedModel.provider === 'openai-compatible')
+  const isAppleModel = selectedModel?.provider === 'apple'
+  const unloadDisabled = isCloudModel || isAppleModel
   const current = unloadModelAfterMinutes(voiceSettings)
 
   return (
@@ -58,17 +62,22 @@ export function VoiceModelUnloadSetting({
               'components.settings.voice.modelUnload.cloud',
               'Cloud models run on the provider’s servers, so nothing stays loaded here.'
             )
-          : t(
-              'components.settings.voice.keepLoaded.description',
-              'Dictation starts at once while it’s loaded.'
-            )
+          : isAppleModel
+            ? t(
+                'components.settings.voice.modelUnload.apple',
+                'Apple Speech is managed by macOS, so nothing stays loaded in Orca.'
+              )
+            : t(
+                'components.settings.voice.keepLoaded.description',
+                'Dictation starts at once while it’s loaded.'
+              )
       }
       labelId={labelId}
       control={
         <Select
           value={choiceValue(current)}
           // Choosing before turning voice on lets Immediately avoid the first load.
-          disabled={isCloudModel}
+          disabled={unloadDisabled}
           onValueChange={(value) =>
             onUpdateVoiceSettings({
               unloadModelAfterMinutes: value === NEVER_VALUE ? null : Number(value)

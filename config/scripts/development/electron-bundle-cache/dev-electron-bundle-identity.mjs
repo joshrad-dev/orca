@@ -11,7 +11,11 @@ export function getDevBundlePlistPatches() {
   return [
     { key: 'CFBundleIdentifier', value: DEV_BUNDLE_ID },
     { key: 'CFBundleName', value: DEV_BUNDLE_DISPLAY_NAME },
-    { key: 'CFBundleDisplayName', value: DEV_BUNDLE_DISPLAY_NAME }
+    { key: 'CFBundleDisplayName', value: DEV_BUNDLE_DISPLAY_NAME },
+    {
+      key: 'NSSpeechRecognitionUsageDescription',
+      value: 'Orca uses Apple Speech to transcribe your voice dictation on this Mac.'
+    }
   ]
 }
 

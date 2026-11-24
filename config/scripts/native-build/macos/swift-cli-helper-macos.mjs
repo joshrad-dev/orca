@@ -56,8 +56,39 @@ const DEV_SWIFT_CLI_HELPERS = [
   ['process-footprint-macos', 'orca-process-footprint', 'memory panel falls back to top']
 ]
 
+const DEV_SIGNED_SWIFT_CLI_HELPERS = [
+  [
+    'build-notification-status-macos.mjs',
+    'orca-notification-status',
+    'permission card falls back to probes'
+  ],
+  ['build-apple-speech-macos.mjs', 'orca-apple-speech', 'Apple Speech dictation unavailable']
+]
+
 /** Dev bundles build each helper for the host arch; a missing swiftc only degrades that helper's feature. */
-export function buildDevSwiftCliHelpers(macOsDir) {
+export function buildDevSwiftCliHelpers(macOsDir, bundleId) {
+  if (bundleId) {
+    for (const [scriptName, executable, fallback] of DEV_SIGNED_SWIFT_CLI_HELPERS) {
+      try {
+        execFileSync(
+          process.execPath,
+          [
+            path.join(repoRoot, 'config', 'scripts', 'native-build', 'macos', scriptName),
+            '--bundle-id',
+            bundleId,
+            '--single-arch',
+            '--output',
+            path.join(macOsDir, executable)
+          ],
+          { stdio: 'inherit' }
+        )
+      } catch (error) {
+        console.warn(
+          `[orca-dev] ${executable} helper build failed (${fallback}): ${error?.message ?? error}`
+        )
+      }
+    }
+  }
   for (const [nativeDir, executable, fallback] of DEV_SWIFT_CLI_HELPERS) {
     try {
       buildSwiftCliHelper({

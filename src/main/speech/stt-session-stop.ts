@@ -23,6 +23,7 @@ export function stopSttDictation(
   }
   if (session.phase === 'starting') {
     // The start sees it was dropped once its model is loaded, which a quick retry can then reuse.
+    session.apple?.cancel()
     state.sessions.delete(owner)
     return Promise.resolve()
   }
@@ -30,6 +31,7 @@ export function stopSttDictation(
     // A cancel after Finish still drops the work whose text it would throw away.
     if (options.discard) {
       session.cloud?.cancel()
+      session.apple?.cancel()
       if (session.engine) {
         discardLocalStream(state, session.engine, session.streamId)
       }
@@ -39,8 +41,31 @@ export function stopSttDictation(
   session.phase = 'stopping'
   session.stopPromise = session.cloud
     ? stopCloudSession(state, session, options.discard === true)
-    : stopLocalSession(state, session, options.discard === true)
+    : session.apple
+      ? stopAppleSession(state, session, options.discard === true)
+      : stopLocalSession(state, session, options.discard === true)
   return session.stopPromise
+}
+
+async function stopAppleSession(
+  state: SttSessionState,
+  session: SttSession,
+  discard: boolean
+): Promise<void> {
+  const apple = session.apple!
+  if (discard) {
+    apple.cancel()
+    releaseSttSession(state, session)
+    return
+  }
+  try {
+    await apple.finish()
+  } catch (error) {
+    session.sink({ type: 'error', error: errorMessage(error) })
+  } finally {
+    releaseSttSession(state, session)
+    session.sink({ type: 'stopped' })
+  }
 }
 
 async function stopCloudSession(

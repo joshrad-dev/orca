@@ -41,8 +41,13 @@ export const openElectronSpeechDownloadRequest: OpenSpeechDownloadRequest = (url
 
 /** Importing these factories loads Electron net. */
 export const electronSpeechServiceFactories: SpeechServiceFactories = {
-  createModelManager: (customModelsDir) =>
-    new ModelManager(customModelsDir, openElectronSpeechDownloadRequest),
+  createModelManager: (customModelsDir, getDictationLanguage) =>
+    new ModelManager(
+      customModelsDir,
+      openElectronSpeechDownloadRequest,
+      undefined,
+      getDictationLanguage
+    ),
   createSttService: (models, gpuEnabled) => {
     const gpu = createSttGpuPolicy(models.getModelsDir(), gpuEnabled)
     return new SttService(models, () => spawnSttWorkerWithCpuFallback(spawnSttUtilityProcess, gpu))

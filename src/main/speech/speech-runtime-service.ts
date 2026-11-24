@@ -11,7 +11,10 @@ type SpeechSettingsStore = {
 }
 
 export type SpeechServiceFactories = {
-  createModelManager(customModelsDir: string | undefined): ModelManager
+  createModelManager(
+    customModelsDir: string | undefined,
+    getDictationLanguage?: () => string | undefined
+  ): ModelManager
   /** `gpuEnabled` reads the user's Voice setting at each recognizer start. */
   createSttService(models: ModelManager, gpuEnabled: () => boolean): SttService
 }
@@ -37,7 +40,10 @@ export function getSpeechModelManager(store: SpeechSettingsStore): ModelManager 
   if (!modelManager) {
     const settings = store.getSettings()
     const customDir = settings.voice?.modelsDir || undefined
-    modelManager = requireFactories().createModelManager(customDir || undefined)
+    modelManager = requireFactories().createModelManager(
+      customDir || undefined,
+      () => store.getSettings().voice?.dictationLanguage
+    )
   }
   return modelManager
 }

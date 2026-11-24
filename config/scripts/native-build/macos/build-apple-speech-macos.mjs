@@ -1,0 +1,96 @@
+#!/usr/bin/env node
+// Embed target CFBundleIdentifier and NSSpeechRecognitionUsageDescription in __TEXT,__info_plist so macOS attributes Speech Recognition TCC records cleanly.
+import { execFileSync } from 'node:child_process'
+import { mkdirSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import path from 'node:path'
+
+const repoRoot = path.resolve(import.meta.dirname, '../../../..')
+const sourcePath = path.join(repoRoot, 'native', 'apple-speech-macos', 'main.swift')
+const defaultOutputPath = path.join(
+  repoRoot,
+  'native',
+  'apple-speech-macos',
+  '.build',
+  'release',
+  'orca-apple-speech'
+)
+
+if (process.platform !== 'darwin') {
+  process.exit(0)
+}
+
+const args = process.argv.slice(2)
+const bundleId = readArg('--bundle-id') ?? 'com.stablyai.orca'
+const outputPath = readArg('--output') ?? defaultOutputPath
+// Dev launches only need the host architecture; release builds ship a universal binary.
+const singleArch = args.includes('--single-arch')
+
+const workDir = path.join(tmpdir(), `orca-apple-speech-${process.pid}`)
+mkdirSync(workDir, { recursive: true })
+try {
+  const plistPath = path.join(workDir, 'Info.plist')
+  writeFileSync(plistPath, embeddedInfoPlist(bundleId), 'utf8')
+  const triples = singleArch
+    ? [process.arch === 'arm64' ? 'arm64-apple-macosx' : 'x86_64-apple-macosx']
+    : ['arm64-apple-macosx', 'x86_64-apple-macosx']
+  const builtBinaries = triples.map((triple) => {
+    const output = path.join(workDir, `orca-apple-speech-${triple}`)
+    execFileSync(
+      'swiftc',
+      [
+        '-O',
+        '-parse-as-library',
+        sourcePath,
+        '-target',
+        triple.replace('-apple-macosx', '-apple-macosx13.4'),
+        '-framework',
+        'AVFAudio',
+        '-framework',
+        'Speech',
+        '-o',
+        output,
+        '-Xlinker',
+        '-sectcreate',
+        '-Xlinker',
+        '__TEXT',
+        '-Xlinker',
+        '__info_plist',
+        '-Xlinker',
+        plistPath
+      ],
+      { stdio: 'inherit' }
+    )
+    return output
+  })
+  mkdirSync(path.dirname(outputPath), { recursive: true })
+  if (builtBinaries.length === 1) {
+    execFileSync('cp', [builtBinaries[0], outputPath])
+  } else {
+    execFileSync('lipo', ['-create', ...builtBinaries, '-output', outputPath])
+  }
+  execFileSync('chmod', ['755', outputPath])
+} finally {
+  rmSync(workDir, { recursive: true, force: true })
+}
+
+function readArg(name) {
+  const index = args.indexOf(name)
+  return index !== -1 ? args[index + 1] : undefined
+}
+
+function embeddedInfoPlist(identifier) {
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>CFBundleIdentifier</key>
+  <string>${identifier}</string>
+  <key>CFBundleName</key>
+  <string>orca-apple-speech</string>
+  <key>NSSpeechRecognitionUsageDescription</key>
+  <string>Orca uses Apple Speech to transcribe your voice dictation on this Mac.</string>
+</dict>
+</plist>
+`
+}

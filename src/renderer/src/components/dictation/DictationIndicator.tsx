@@ -121,7 +121,13 @@ function useIsCloudModel(): boolean {
     let current = true
     void loadSpeechCatalog().then((catalog) => {
       if (current) {
-        setCloud(catalog.some((model) => model.id === modelId && model.provider !== 'local'))
+        setCloud(
+          catalog.some(
+            (model) =>
+              model.id === modelId &&
+              (model.provider === 'openai' || model.provider === 'openai-compatible')
+          )
+        )
       }
     })
     return () => {

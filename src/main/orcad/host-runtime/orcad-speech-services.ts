@@ -9,9 +9,14 @@ import { spawnSttForkedProcess } from '../../speech/stt-worker-forked-process'
 
 // Local speech needs the installed app recognizer supplied by orca serve.
 export const orcadSpeechServiceFactories: SpeechServiceFactories = {
-  createModelManager: (customModelsDir) =>
+  createModelManager: (customModelsDir, getDictationLanguage) =>
     // Headless key reads cannot open keychain prompts, so readiness may verify decryption.
-    new ModelManager(customModelsDir, openNodeSpeechDownloadRequest, canReadCloudSpeechCredentials),
+    new ModelManager(
+      customModelsDir,
+      openNodeSpeechDownloadRequest,
+      canReadCloudSpeechCredentials,
+      getDictationLanguage
+    ),
   createSttService: (models, gpuEnabled) => {
     const gpu = createSttGpuPolicy(models.getModelsDir(), gpuEnabled)
     return new SttService(models, () => spawnSttWorkerWithCpuFallback(spawnSttForkedProcess, gpu))

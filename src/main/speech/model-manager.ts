@@ -2,6 +2,7 @@ import { existsSync, mkdirSync, rmSync } from 'node:fs'
 import { rm } from 'node:fs/promises'
 import { join, relative, resolve } from 'node:path'
 import type { SpeechModelState, SpeechModelStatus } from '../../shared/speech/speech-types'
+import { getAppleSpeechModelState, runAppleSpeechModelSetup } from './apple-speech-setup'
 import { SPEECH_MODEL_CATALOG, getCatalogModel, isLocalSpeechModel } from './model-catalog'
 import type { SpeechModelDownload } from './model-download-catalog'
 import { downloadSileroVadInBackground, speechModelDownload } from './speech-vad-model'
@@ -36,7 +37,8 @@ export class ModelManager extends SpeechModelDownloadTransport {
   constructor(
     customModelsDir: string | undefined,
     openRequest: OpenSpeechDownloadRequest,
-    private readonly hasCloudCredentials = hasCloudSpeechCredentials
+    private readonly hasCloudCredentials = hasCloudSpeechCredentials,
+    private readonly getDictationLanguage?: () => string | undefined
   ) {
     super(openRequest)
     const requestedModelsDir =
@@ -81,12 +83,7 @@ export class ModelManager extends SpeechModelDownloadTransport {
   }
 
   async getModelStates(): Promise<SpeechModelState[]> {
-    const states: SpeechModelState[] = []
-    for (const manifest of SPEECH_MODEL_CATALOG) {
-      const state = await this.getModelState(manifest.id)
-      states.push(state)
-    }
-    return states
+    return Promise.all(SPEECH_MODEL_CATALOG.map((manifest) => this.getModelState(manifest.id)))
   }
 
   async getModelState(modelId: string): Promise<SpeechModelState> {
@@ -99,6 +96,10 @@ export class ModelManager extends SpeechModelDownloadTransport {
     const manifest = speechModelDownload(modelId)
     if (!manifest) {
       return { id: modelId, status: 'error', error: 'Unknown model' }
+    }
+
+    if (manifest.provider === 'apple') {
+      return getAppleSpeechModelState(modelId, this.getDictationLanguage?.())
     }
 
     if (manifest.provider !== 'local') {
@@ -146,6 +147,14 @@ export class ModelManager extends SpeechModelDownloadTransport {
     const manifest = speechModelDownload(modelId)
     if (!manifest) {
       throw new Error(`Unknown model: ${modelId}`)
+    }
+    if (manifest.provider === 'apple') {
+      return runAppleSpeechModelSetup(
+        modelId,
+        this.getDictationLanguage?.(),
+        this.activeDownloads,
+        this.updateState.bind(this)
+      )
     }
     if (manifest.provider !== 'local') {
       throw new Error(`Model does not support downloads: ${modelId}`)
@@ -228,11 +237,11 @@ export class ModelManager extends SpeechModelDownloadTransport {
 
   async deleteModel(modelId: string): Promise<void> {
     await this.migrationReady
-    if (!getCatalogModel(modelId)) {
+    const manifest = getCatalogModel(modelId)
+    if (!manifest) {
       throw new Error(`Unknown model: ${modelId}`)
     }
-    const manifest = getCatalogModel(modelId)
-    if (!manifest || !isLocalSpeechModel(manifest)) {
+    if (!isLocalSpeechModel(manifest)) {
       throw new Error(`Model does not support deletion: ${modelId}`)
     }
     const download = this.activeDownloads.get(modelId)

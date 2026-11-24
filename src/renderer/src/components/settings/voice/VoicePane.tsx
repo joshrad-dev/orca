@@ -120,6 +120,11 @@ export function VoicePane({
     return cleanup
   }, [refreshModelStates])
 
+  // Apple Speech asset readiness is per dictation language, so refresh when the language changes.
+  useEffect(() => {
+    refreshModelStates()
+  }, [refreshModelStates, voiceSettings.dictationLanguage])
+
   const toggleVoiceDictation = async (alongside?: Partial<VoiceSettings>): Promise<void> => {
     await handleVoiceDictationToggle({
       voiceEnabled: voiceSettings.enabled,

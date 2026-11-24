@@ -261,7 +261,8 @@ function prepareMacDevElectronApp() {
   const requiredResourcePaths = [
     chromiumResourcePath,
     path.join(appPath, 'Contents', 'MacOS', 'orca-keyboard-layout'),
-    path.join(appPath, 'Contents', 'MacOS', 'orca-process-footprint')
+    path.join(appPath, 'Contents', 'MacOS', 'orca-process-footprint'),
+    path.join(appPath, 'Contents', 'MacOS', 'orca-apple-speech')
   ]
 
   function copiedAppIsUsable() {
@@ -327,34 +328,8 @@ function prepareMacDevElectronApp() {
     setPlistValue(helperPlistPath, key, value)
   }
 
-  // Bundle notification helper with dev signing ID because macOS keys authorization by it; without swiftc use delivery-probe fallback.
-  try {
-    execFileSync(
-      process.execPath,
-      [
-        path.join(
-          repoRoot,
-          'config',
-          'scripts',
-          'native-build',
-          'macos',
-          'build-notification-status-macos.mjs'
-        ),
-        '--bundle-id',
-        bundleId,
-        '--single-arch',
-        '--output',
-        path.join(appPath, 'Contents', 'MacOS', 'orca-notification-status')
-      ],
-      { stdio: 'inherit' }
-    )
-  } catch (error) {
-    console.warn(
-      `[orca-dev] notification-status helper build failed (permission card falls back to probes): ${error?.message ?? error}`
-    )
-  }
-
-  buildDevSwiftCliHelpers(path.join(appPath, 'Contents', 'MacOS'))
+  // Bundle signed and unsigned Swift CLI helpers into Contents/MacOS so macOS attributes TCC records to Orca Dev.
+  buildDevSwiftCliHelpers(path.join(appPath, 'Contents', 'MacOS'), bundleId)
 
   // Re-sign after copy/plist edits or macOS rejects notification registration (UNErrorDomain 1); signing failure stays nonfatal for dev.
   let signed = true

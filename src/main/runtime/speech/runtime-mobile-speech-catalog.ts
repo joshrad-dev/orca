@@ -7,10 +7,13 @@ import type {
 import { getDefaultVoiceSettings } from '../../../shared/orca-profiles/constants'
 import { dictationShortcutModeSettings } from '../../../shared/speech/dictation/dictation-shortcut-mode'
 import {
+  getAvailableSpeechModelCatalog,
   getCatalogModel,
-  isLocalSpeechModel,
-  SPEECH_MODEL_CATALOG
+  isAppleSpeechModel,
+  isCloudSpeechModel,
+  isLocalSpeechModel
 } from '../../speech/model-catalog'
+import { isAppleSpeechAvailable } from '../../speech/apple-speech-helper'
 import { isOfferedSpeechModel } from '../../../shared/speech/models/speech-model-retirement'
 import { getSpeechModelManager, getSpeechSttService } from '../../speech/speech-runtime-service'
 import { hasLocalSpeechRecognizer } from '../../speech/stt-worker-paths'
@@ -40,10 +43,13 @@ export class RuntimeMobileSpeechCatalog {
   async list(worktreeId?: string): Promise<RuntimeSpeechSetupState> {
     const store = this.requireStore()
     const voice = store.getSettings().voice ?? getDefaultVoiceSettings()
-    const states = await getSpeechModelManager(store).getModelStates()
+    const [catalog, states] = await Promise.all([
+      getAvailableSpeechModelCatalog(),
+      getSpeechModelManager(store).getModelStates()
+    ])
     const stateById = new Map(states.map((state) => [state.id, state]))
     // Omit unsupported status variants; older phones could treat them as pickable models.
-    const runnable = SPEECH_MODEL_CATALOG.filter(
+    const runnable = catalog.filter(
       (manifest) =>
         isOfferedSpeechModel(manifest) &&
         (!isLocalSpeechModel(manifest) || hasLocalSpeechRecognizer()) &&
@@ -56,8 +62,8 @@ export class RuntimeMobileSpeechCatalog {
       return {
         id: manifest.id,
         label: manifest.label,
-        // Older phones know only these two; both cloud providers transcribe on this host.
-        provider: isLocalSpeechModel(manifest) ? 'local' : 'openai',
+        // Older phones know only these two; Apple Speech runs on this host like local models.
+        provider: isCloudSpeechModel(manifest) ? 'openai' : 'local',
         sizeBytes: manifest.sizeBytes ?? null,
         recommended: manifest.recommended === true,
         status: state?.status ?? 'not-downloaded',
@@ -81,7 +87,11 @@ export class RuntimeMobileSpeechCatalog {
   async download(modelId: string): Promise<{ started: true }> {
     const store = this.requireStore()
     const manifest = getCatalogModel(modelId)
-    if (!manifest || !isLocalSpeechModel(manifest) || !hasLocalSpeechRecognizer()) {
+    const canDownload =
+      manifest !== undefined &&
+      ((isLocalSpeechModel(manifest) && hasLocalSpeechRecognizer()) ||
+        (isAppleSpeechModel(manifest) && (await isAppleSpeechAvailable())))
+    if (!canDownload) {
       throw new Error('voice_model_not_downloadable')
     }
     void getSpeechModelManager(store)

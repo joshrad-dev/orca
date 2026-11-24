@@ -44,7 +44,8 @@ export function VoiceSpeechModelRow({
   onSetUp
 }: VoiceSpeechModelRowProps): React.JSX.Element {
   const t = useTranslate()
-  const isCloud = manifest.provider !== 'local'
+  const isApple = manifest.provider === 'apple'
+  const isCloud = manifest.provider === 'openai' || manifest.provider === 'openai-compatible'
   const retired = quality === null
   const ready = state?.status === 'ready'
   const downloading = isSpeechModelDownloading(state)
@@ -59,6 +60,16 @@ export function VoiceSpeechModelRow({
     )
   } else if (state?.status === 'extracting') {
     subline = t('auto.components.settings.VoicePane.61a16c8141', 'Extracting...')
+  } else if (downloading && isApple) {
+    const percent = Math.round((state?.progress ?? 0) * 100)
+    subline =
+      percent > 0
+        ? t(
+            'components.settings.voice.models.settingUpAppleSpeechProgress',
+            'Setting up Apple Speech ({{percent}}%)',
+            { percent }
+          )
+        : t('components.settings.voice.models.settingUpAppleSpeech', 'Setting up Apple Speech…')
   } else if (downloading) {
     subline = t(
       'components.settings.voice.models.downloadingProgress',
@@ -122,6 +133,10 @@ export function VoiceSpeechModelRow({
         : t('components.settings.voice.models.setUpCloud', 'Set up'),
       () => onSetUpCloud(manifest.id)
     )
+  } else if (isApple) {
+    action = button(t('components.settings.voice.models.setUpCloud', 'Set up'), () =>
+      onDownload(manifest.id)
+    )
   } else if (recommended) {
     action = button(t('components.settings.voice.models.download', 'Download'), onSetUp, {
       primary: true,
@@ -134,7 +149,7 @@ export function VoiceSpeechModelRow({
   }
 
   // Deletable files: always offered on the model in use, on hover for the rest.
-  const deletable = !isCloud && !retired && !downloading && (ready || needsUpdate)
+  const deletable = !isCloud && !isApple && !retired && !downloading && (ready || needsUpdate)
 
   return (
     <div
@@ -169,9 +184,11 @@ export function VoiceSpeechModelRow({
       >
         {isCloud || retired
           ? null
-          : t('auto.components.settings.VoicePane.91980ce124', '{{value0}} MB', {
-              value0: totalMb
-            })}
+          : isApple
+            ? t('components.settings.voice.models.builtIn', 'Built in')
+            : t('auto.components.settings.VoicePane.91980ce124', '{{value0}} MB', {
+                value0: totalMb
+              })}
       </div>
       <div
         className={cn(

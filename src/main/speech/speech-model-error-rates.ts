@@ -10,6 +10,8 @@ const CHARACTER_SCORED = new Set(['ja', 'ko', 'zh'])
 // files, one run per clip. English is LibriSpeech (73 clips); other languages are FLEURS dev
 // (5 clips each, so rough). Each clip's language was sent the way Orca sends it; Parakeet ignores it.
 const MEASURED = {
+  // Streamed through macOS 27 SpeechAnalyzer (en-US); OS-managed asset, measured on LibriSpeech 73-clip clean.
+  'apple-speech': [['en', 3.1, '2026-11-23']],
   'parakeet-tdt-0.6b-v3-int8': [
     ['en', 3.7, '2026-11-06'],
     ['de', 2.2, '2026-11-06'],

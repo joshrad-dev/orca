@@ -2,6 +2,7 @@ import { SPEECH_MODEL_NEEDS_UPDATE_ERROR } from '../../shared/speech/models/spee
 import { engineDictationLanguage } from '../../shared/speech/models/dictation-language'
 import type { SpeechModelManifest } from '../../shared/speech/speech-types'
 import { getCatalogModel } from './model-catalog'
+import { AppleSpeechTranscriptionSession } from './apple-speech-transcription-session'
 import { OpenAiTranscriptionSession } from './openai-transcription-client'
 import { resolveCloudTranscriptionTarget } from './cloud-transcription-target'
 import type { SttEventSink } from './stt-service'
@@ -76,6 +77,7 @@ export async function startSttDictation(
     vocabulary,
     engine: null,
     cloud: null,
+    apple: null,
     phase: 'starting',
     stopPromise: null
   }
@@ -88,6 +90,12 @@ export async function startSttDictation(
       if (state.engine !== engine) {
         throw new Error(STT_WORKER_EXITED_ERROR)
       }
+    } else if (manifest.provider === 'apple') {
+      // Apple Speech runs via macOS SpeechAnalyzer; free any idle local recognizer.
+      await teardownIdleSttEngine(state)
+      const apple = new AppleSpeechTranscriptionSession(sink, language, vocabulary)
+      session.apple = apple
+      await apple.start()
     } else {
       await requireModelReady(state, modelId)
       // A cloud dictation needs no recognizer; free one nobody else uses.
@@ -103,6 +111,7 @@ export async function startSttDictation(
     sink({ type: 'ready' })
   } catch (error) {
     session.cloud?.cancel()
+    session.apple?.cancel()
     releaseSttSession(state, session)
     throw error
   }

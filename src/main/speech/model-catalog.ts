@@ -1,20 +1,36 @@
 import type { SpeechModelManifest } from '../../shared/speech/speech-types'
 import {
+  APPLE_SPEECH_DEFAULT_LANGUAGES,
   DICTATION_LANGUAGES,
   NEMOTRON_DICTATION_LANGUAGES,
   PARAKEET_V3_LANGUAGES,
   SENSE_VOICE_DICTATION_LANGUAGES,
   WHISPER_LANGUAGES
 } from '../../shared/speech/models/dictation-language'
+import { getAppleSpeechStatus } from './apple-speech-helper'
 import { getSpeechModelDownloadMetadata } from './model-download-catalog'
 import { getGgufSpeechModelDownload } from './speech-model-gguf-downloads'
 import { getSpeechModelErrorRates } from './speech-model-error-rates'
+
+export const APPLE_SPEECH_MODEL_ID = 'apple-speech'
 
 const legacy = (id: Parameters<typeof getSpeechModelDownloadMetadata>[0]) => ({
   legacyDownloadFiles: getSpeechModelDownloadMetadata(id).downloadFiles
 })
 
 export const SPEECH_MODEL_CATALOG: SpeechModelManifest[] = [
+  {
+    id: APPLE_SPEECH_MODEL_ID,
+    label: 'Apple Speech',
+    type: 'apple-speech',
+    provider: 'apple',
+    language: 'multilingual',
+    dictationLanguages: APPLE_SPEECH_DEFAULT_LANGUAGES,
+    languages: APPLE_SPEECH_DEFAULT_LANGUAGES,
+    ...getSpeechModelErrorRates(APPLE_SPEECH_MODEL_ID),
+    sampleRate: 16000,
+    streaming: true
+  },
   {
     id: 'parakeet-tdt-0.6b-v3-int8',
     label: 'Parakeet TDT v3',
@@ -251,6 +267,30 @@ export function getCatalogModel(id: string): SpeechModelManifest | undefined {
 
 export function isLocalSpeechModel(manifest: SpeechModelManifest): boolean {
   return manifest.provider === 'local'
+}
+
+export function isAppleSpeechModel(manifest: SpeechModelManifest): boolean {
+  return manifest.provider === 'apple'
+}
+
+export function isCloudSpeechModel(manifest: SpeechModelManifest): boolean {
+  return manifest.provider === 'openai' || manifest.provider === 'openai-compatible'
+}
+
+export async function getAvailableSpeechModelCatalog(): Promise<SpeechModelManifest[]> {
+  const appleStatus = await getAppleSpeechStatus()
+  if (!appleStatus.available) {
+    return SPEECH_MODEL_CATALOG.filter((manifest) => !isAppleSpeechModel(manifest))
+  }
+  const liveLanguages =
+    appleStatus.supportedLanguages.length > 0
+      ? appleStatus.supportedLanguages
+      : APPLE_SPEECH_DEFAULT_LANGUAGES
+  return SPEECH_MODEL_CATALOG.map((manifest) =>
+    isAppleSpeechModel(manifest)
+      ? { ...manifest, languages: liveLanguages, dictationLanguages: liveLanguages }
+      : manifest
+  )
 }
 
 export function replaceRetiredSpeechModelId(id: string): string {

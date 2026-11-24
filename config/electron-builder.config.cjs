@@ -254,6 +254,8 @@ const macUsageDescriptions = {
   NSLocalNetworkUsageDescription:
     'Orca allows terminal-launched developer tools to discover and connect to local development servers when you request it.',
   NSMicrophoneUsageDescription: "Application requests access to the device's microphone.",
+  NSSpeechRecognitionUsageDescription:
+    'Orca uses Apple Speech to transcribe your voice dictation on this Mac.',
   NSRemindersUsageDescription:
     'Orca allows terminal-launched developer tools to access your reminders when you request it.',
   NSRemindersFullAccessUsageDescription:
@@ -611,6 +613,11 @@ module.exports = {
         context.packager
       )
       await signMacStandaloneHelper(
+        join(resourcesDir, '..', 'MacOS', 'orca-apple-speech'),
+        'orca-apple-speech',
+        context.packager
+      )
+      await signMacStandaloneHelper(
         finalizePackagedProviderExec(resourcesDir, 'darwin'),
         'orca-provider-exec',
         context.packager
@@ -738,6 +745,10 @@ module.exports = {
       {
         from: 'native/process-footprint-macos/.build/release/orca-process-footprint',
         to: 'MacOS/orca-process-footprint'
+      },
+      {
+        from: 'native/apple-speech-macos/.build/release/orca-apple-speech',
+        to: 'MacOS/orca-apple-speech'
       },
       // Nested executables belong in Contents/MacOS, where afterPack signs them before the app.
       {

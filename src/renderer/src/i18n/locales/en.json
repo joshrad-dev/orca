@@ -23327,7 +23327,8 @@
           "detectsItself": "The language you speak. {{model}} detects it by itself."
         },
         "modelUnload": {
-          "cloud": "Cloud models run on the provider’s servers, so nothing stays loaded here."
+          "cloud": "Cloud models run on the provider’s servers, so nothing stays loaded here.",
+          "apple": "Apple Speech is managed by macOS, so nothing stays loaded in Orca."
         },
         "fillerWords": {
           "0134406785": "Remove filler words",
@@ -23401,8 +23402,12 @@
             "whisperTiny": "Smallest download. Good for trying dictation out.",
             "whisperTurbo": "Most languages, about 100. Slow without a GPU.",
             "senseVoice": "Fast. For Chinese, Japanese and Korean.",
-            "nemotron": "{{languages}} languages, including Arabic, Hindi and Japanese."
-          }
+            "nemotron": "{{languages}} languages, including Arabic, Hindi and Japanese.",
+            "appleSpeech": "Built-in macOS speech recognition, kept up to date by Apple."
+          },
+          "settingUpAppleSpeechProgress": "Setting up Apple Speech ({{percent}}%)",
+          "settingUpAppleSpeech": "Setting up Apple Speech…",
+          "builtIn": "Built in"
         },
         "vocabulary": {
           "title": "Vocabulary",

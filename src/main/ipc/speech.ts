@@ -8,7 +8,7 @@ import {
 import { abortWhenRendererGone } from './renderer-requests/renderer-lifetime-abort'
 import { dictationTermsFor } from '../../shared/speech/dictation/dictation-dictionary'
 import { dictationTextSettingsFor } from '../../shared/speech/dictation/dictation-cleanup'
-import { SPEECH_MODEL_CATALOG } from '../speech/model-catalog'
+import { getAvailableSpeechModelCatalog } from '../speech/model-catalog'
 import { deleteLocalSpeechModel } from '../speech/speech-model-deletion'
 import { getSpeechModelManager, getSpeechSttService } from '../speech/speech-runtime-service'
 import {
@@ -73,7 +73,7 @@ export function registerSpeechHandlers(
   })
 
   ipcMain.handle('speech:getCatalog', () => {
-    return SPEECH_MODEL_CATALOG
+    return getAvailableSpeechModelCatalog()
   })
 
   ipcMain.handle('speech:getModelStates', async () => {

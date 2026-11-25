@@ -74,6 +74,7 @@ import {
 } from '@/runtime/native-chat/agent-catalogs/chat-provider-agents'
 import { LOCAL_EXECUTION_HOST_ID } from '../../../../../../shared/execution-host/execution-host'
 import { useTranslate } from '@/i18n/use-translate'
+import { useAppShellMode } from '@/app-shell/simple-mode/app-shell-mode-store'
 import { chatProgramInstalled } from '../../../../../../shared/agent-launch/picker/agent-launch-picker-rows'
 
 export type AgentPermissionsRenderer = (props: AgentPermissionsSettingProps) => React.ReactNode
@@ -108,6 +109,9 @@ export function AgentLaunchSettingsCatalog({
   }
 }): React.JSX.Element {
   const t = useTranslate()
+  // Simple Bots mode always opens agents as Chat, so it hides the per-agent Chat/CLI switch.
+  const shellMode = useAppShellMode()
+  const offersOpensAs = Boolean(local) && shellMode !== 'simple'
   const {
     detectedIds: detected,
     detectionFailed,
@@ -322,17 +326,18 @@ export function AgentLaunchSettingsCatalog({
     const isDetected = listedInstalled && detectedIds?.has(agent.id) === true
     return {
       ...cliRowProps(agent, isDetected),
-      opensAs: local
-        ? buildAgentOpensAs({
-            agent: agent.id,
-            cliDetected: installedHere === null ? null : installedHere.includes(agent.id),
-            chatProgramHere: chatOnly.has(agent.id),
-            settings: local.settings,
-            updateSettings: local.updateSettings,
-            includeDisabled: true
-          })
-        : undefined,
-      reserveOpensAsSlot: Boolean(local),
+      opensAs:
+        local && offersOpensAs
+          ? buildAgentOpensAs({
+              agent: agent.id,
+              cliDetected: installedHere === null ? null : installedHere.includes(agent.id),
+              chatProgramHere: chatOnly.has(agent.id),
+              settings: local.settings,
+              updateSettings: local.updateSettings,
+              includeDisabled: true
+            })
+          : undefined,
+      reserveOpensAsSlot: offersOpensAs,
       chatRuntime:
         chatAgents.includes(agent.id) &&
         (managedChatAgents.has(agent.id) || chatUnavailableOnThisDesktop(agent.id)) &&

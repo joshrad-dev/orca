@@ -2,7 +2,6 @@ import { runtimeTargetEnvironmentId } from '@/runtime/rpc/targets/runtime-client
 import { AccountsPane } from '../accounts/AccountsPane'
 import { getProviderAccountsOwnerKey } from '@/runtime/provider-accounts/observations/runtime-provider-accounts-client'
 import { AgentsPane } from '../agents/AgentsPane'
-import { WorkspaceModeSetting } from '../agents/WorkspaceModeSetting'
 import { AgentDefaultSurfaceSection } from '../agents/surfaces/AgentDefaultSurfaceSection'
 import { ComputerUsePane } from '../computer-use/ComputerUsePane'
 import { LinearAgentSkillPane } from '../skills/linear/LinearAgentSkillPane'
@@ -33,7 +32,6 @@ export function renderAgentsSettingsSection(
     >
       {view.isSectionMounted('agents') ? (
         <div className="space-y-8">
-          <WorkspaceModeSetting />
           {/* A web page's server is set from a desktop; its caption names "this computer". */}
           {model.showDesktopOnlySettings || model.settingsHostScope.target.kind === 'local' ? (
             <AgentDefaultSurfaceSection

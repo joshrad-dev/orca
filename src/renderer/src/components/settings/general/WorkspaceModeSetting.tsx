@@ -7,7 +7,7 @@ import {
 import { useTranslate } from '@/i18n/use-translate'
 import { SettingsRow, SettingsSegmentedControl } from '../form-controls/SettingsFormControls'
 import { SettingsGroup } from '../section-layout/SettingsGroup'
-import { AGENT_WORKSPACE_MODE_SECTION_ID } from './agents-search'
+import { GENERAL_WORKSPACE_MODE_SECTION_ID } from './general-search'
 
 export function WorkspaceModeSetting(): React.JSX.Element {
   const t = useTranslate()
@@ -35,7 +35,7 @@ export function WorkspaceModeSetting(): React.JSX.Element {
   ]
 
   return (
-    <div id={AGENT_WORKSPACE_MODE_SECTION_ID} className="scroll-mt-8">
+    <div id={GENERAL_WORKSPACE_MODE_SECTION_ID} className="scroll-mt-8">
       <SettingsGroup>
         <SettingsRow
           label={label}

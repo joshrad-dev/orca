@@ -213,6 +213,25 @@ export const getGeneralUpdateSearchEntries = createLocalizedCatalog(() => [
   }
 ])
 
+/** The Bots / Code mode toggle at the top of Settings > General. */
+export const GENERAL_WORKSPACE_MODE_SECTION_ID = 'general-workspace-mode'
+
+export const getGeneralWorkspaceModeSearchEntries = createLocalizedCatalog(() => [
+  {
+    targetSectionId: GENERAL_WORKSPACE_MODE_SECTION_ID,
+    title: translate('simpleBots.mode.label', 'Workspace mode'),
+    description: translate(
+      'simpleBots.mode.description',
+      'Choose whether Orca centers on Bots for everyday work or the full Code workspace.'
+    ),
+    keywords: [
+      ...translateSearchKeyword('simpleBots.mode.bots', 'Bots'),
+      ...translateSearchKeyword('simpleBots.mode.code', 'Code'),
+      ...translateSearchKeyword('components.onboarding.useCase.everyday.label', 'Everyday work')
+    ]
+  }
+])
+
 type GeneralPaneSearchOptions = {
   includeProjectRuntime?: boolean
 }
@@ -221,6 +240,7 @@ export function getGeneralPaneSearchEntries(
   options: GeneralPaneSearchOptions = {}
 ): SettingsSearchEntry[] {
   return [
+    ...getGeneralWorkspaceModeSearchEntries(),
     ...getGeneralWorkspaceSearchEntries(),
     ...getGeneralNavigationSearchEntries(),
     ...Object.values(getGeneralConfirmationSearchEntries()),

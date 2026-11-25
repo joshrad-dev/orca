@@ -139,15 +139,30 @@ export function agentSurfaceSettingsUpdate(
   return (settings?.agentDefaultSurface === 'chat') === chat ? {} : { agentDefaultSurface: surface }
 }
 
-/** Switch app shell mode for the chosen onboarding use case; Everyday work also enables Chat UI by default. */
+/** Everyday work opens every agent as Chat: the Chat default, minus per-agent CLI choices that would override it. */
+export function everydayChatSettingsUpdate(
+  settings: Pick<GlobalSettings, 'agentDefaultSurface' | 'nativeChatProviders'> | null | undefined
+): Partial<Pick<GlobalSettings, 'agentDefaultSurface' | 'nativeChatProviders'>> {
+  const update: Partial<Pick<GlobalSettings, 'agentDefaultSurface' | 'nativeChatProviders'>> =
+    agentSurfaceSettingsUpdate(settings, 'chat')
+  const providers = settings?.nativeChatProviders
+  if (providers && Object.values(providers).some((choice) => choice === false)) {
+    update.nativeChatProviders = Object.fromEntries(
+      Object.entries(providers).filter(([, choice]) => choice !== false)
+    )
+  }
+  return update
+}
+
+/** Switch app shell mode for the chosen onboarding use case; Everyday work also opens agents as Chat. */
 export async function applyOnboardingUseCaseSelection(
   useCase: OnboardingUseCase,
-  settings: Pick<GlobalSettings, 'agentDefaultSurface'> | null,
+  settings: Pick<GlobalSettings, 'agentDefaultSurface' | 'nativeChatProviders'> | null,
   updateSettings: (updates: Partial<GlobalSettings>) => Promise<void> | void
 ): Promise<void> {
   setAppShellMode(useCase === 'everyday' ? 'simple' : 'ide')
   if (useCase === 'everyday') {
-    const chatUpdate = agentSurfaceSettingsUpdate(settings, 'chat')
+    const chatUpdate = everydayChatSettingsUpdate(settings)
     if (Object.keys(chatUpdate).length > 0) {
       await updateSettings(chatUpdate)
     }

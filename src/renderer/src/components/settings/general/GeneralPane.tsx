@@ -16,8 +16,10 @@ import { LOCAL_SETTINGS_HOST_SCOPE } from '../host-scope/settings-host-scope'
 import {
   getGeneralCliSearchEntries,
   getGeneralNavigationSearchEntries,
-  getGeneralUpdateSearchEntries
+  getGeneralUpdateSearchEntries,
+  getGeneralWorkspaceModeSearchEntries
 } from './general-search'
+import { WorkspaceModeSetting } from './WorkspaceModeSetting'
 import { getGeneralEditorSearchDescriptors } from '../editor/general-editor-search'
 import { getGeneralSupportSearchEntries } from './general-support-search'
 import { getGeneralProjectRuntimeSearchEntries } from './project-runtime/general-project-runtime-search'
@@ -176,6 +178,9 @@ function GeneralRootSettings({
         : t('settings.general.worktrees.hidden', 'All hidden')
   return (
     <>
+      {matchesSettingsSearch(query, getGeneralWorkspaceModeSearchEntries()) ? (
+        <WorkspaceModeSetting />
+      ) : null}
       {matchesSettingsSearch(query, tabsEntries) ? (
         <SettingsGroup title={t('settings.general.tabs.title', 'Tabs')}>
           <RecentTabOrderControl

@@ -26970,7 +26970,8 @@
     "noChat": "No chat for {{agent}}",
     "noTerminal": "No terminal for {{agent}}",
     "openAsChat": "Open as chat",
-    "openAsTerminal": "Open as terminal"
+    "openAsTerminal": "Open as terminal",
+    "moreAgents": "More agents ({{count}})"
   },
   "automations": {
     "runFailures": {

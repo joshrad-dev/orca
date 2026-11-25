@@ -1,5 +1,5 @@
-import type { ComponentProps, ReactNode } from 'react'
-import { Check, SquareTerminal } from 'lucide-react'
+import { useContext, useState, type ComponentProps, type ReactNode } from 'react'
+import { Check, MoreHorizontal, SquareTerminal } from 'lucide-react'
 import { AgentVariantIcon } from '@/components/agent/icons/AgentVariantIcon'
 import { Command, CommandGroup, CommandItem, CommandList } from '@/components/ui/command'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
@@ -7,6 +7,7 @@ import { useTranslate } from '@/i18n/use-translate'
 import { cn } from '@/lib/class-names'
 import { bindHorizontalWheelScroll } from '@/lib/horizontal-wheel-scroll'
 import { AgentDefaultContextMenu } from './agent-combobox-items'
+import { AgentPickerFoldedAgentsContext } from './agent-picker-folded-agents'
 import type { AgentPickerChoice } from './agent-picker-search-rows'
 import type { AgentPickerEntry } from '../../../../shared/agent-launch/picker/agent-launch-picker'
 
@@ -38,6 +39,17 @@ export function AgentPickerAgentTabs({
   onSelect: (agent: Agent) => void
 }) {
   const t = useTranslate()
+  // The shown pane is never folded away.
+  const foldedAgents = useContext(AgentPickerFoldedAgentsContext)
+  const [unfolded, setUnfolded] = useState(false)
+  const hidden =
+    unfolded || !foldedAgents
+      ? 0
+      : entries.filter((entry) => foldedAgents.has(entry.agent) && entry.agent !== pane).length
+  const shown =
+    hidden === 0
+      ? entries
+      : entries.filter((entry) => !foldedAgents?.has(entry.agent) || entry.agent === pane)
   return (
     // Why: once one tab's label shows, the next tab's shows without a second wait.
     <TooltipProvider skipDelayDuration={300}>
@@ -89,7 +101,7 @@ export function AgentPickerAgentTabs({
             <div aria-hidden className="mx-1 h-4 w-px shrink-0 bg-border" />
           </>
         ) : null}
-        {entries.map((entry) => {
+        {shown.map((entry) => {
           const missing = entry.surfaces.length === 0
           return (
             <AgentDefaultContextMenu
@@ -108,6 +120,15 @@ export function AgentPickerAgentTabs({
             </AgentDefaultContextMenu>
           )
         })}
+        {hidden > 0 ? (
+          <AgentPickerRailTab
+            label={t('agentPicker.moreAgents', 'More agents ({{count}})', { count: hidden })}
+            selected={false}
+            onClick={() => setUnfolded(true)}
+          >
+            <MoreHorizontal className="size-4" />
+          </AgentPickerRailTab>
+        ) : null}
       </div>
     </TooltipProvider>
   )

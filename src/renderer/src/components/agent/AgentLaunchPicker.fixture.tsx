@@ -15,6 +15,7 @@ import type {
 } from '../../../../shared/agent-launch/picker/agent-launch-picker'
 import type { AgentSessionModelOption } from '../../../../shared/agent-session/options/model-catalog/agent-session-model-option'
 import type { TuiAgent } from '../../../../shared/agent-launch/catalog/tui-agent'
+import { AgentPickerFoldedAgentsContext } from './agent-picker-folded-agents'
 
 const level = (value: string, label: string) => ({ value, label })
 const CLAUDE_EFFORTS = [
@@ -158,6 +159,30 @@ export const dropdownClaude = defineFixture({
   width: 460,
   render: () => <HandOffField />,
   interact: openDropdown
+})
+
+// Bots mode: agents that would install first wait behind More agents.
+const FOLDED = new Set<TuiAgent>(['grok', 'opencode', 'gemini'])
+const FoldedField = () => (
+  <AgentPickerFoldedAgentsContext.Provider value={FOLDED}>
+    <HandOffField />
+  </AgentPickerFoldedAgentsContext.Provider>
+)
+
+export const dropdownFoldedAgents = defineFixture({
+  width: 460,
+  render: () => <FoldedField />,
+  interact: openDropdown
+})
+
+export const dropdownFoldedAgentsOpened = defineFixture({
+  width: 460,
+  render: () => <FoldedField />,
+  interact: async () => {
+    await openDropdown()
+    click('[role="tab"][aria-label^="More agents"]')
+    await settle()
+  }
 })
 
 export const dropdownCodexMoreModels = defineFixture({

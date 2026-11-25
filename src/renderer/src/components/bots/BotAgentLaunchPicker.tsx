@@ -6,6 +6,9 @@ import { useTranslate } from '@/i18n/use-translate'
 import { Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { AgentLaunchPicker } from '@/components/agent/AgentLaunchPicker'
+import { useAppShellMode } from '@/app-shell/simple-mode/app-shell-mode-store'
+import { botAgentInstalledOnHost } from '../../../../shared/bots/bot-agent-choices'
+import { AgentPickerFoldedAgentsContext } from '@/components/agent/agent-picker-folded-agents'
 import { useAgentPickerDraftScope } from '@/components/agent/AgentLaunchSetupButton'
 import { useAgentLaunchPickerInventory } from '@/components/agent/use-agent-launch-picker-inventory'
 import type { NewTabAgentMenuModel } from '../agent/launch-menu/new-tab-agent-menu-model'
@@ -205,6 +208,19 @@ export function BotAgentLaunchPicker({
       withPermission
     )
   }
+  // Bots mode leads with what this computer has; agents that would install first wait behind More.
+  const simpleMode = useAppShellMode() === 'simple'
+  const foldedAgents = useMemo(
+    () =>
+      simpleMode
+        ? new Set(
+            choices.filter(
+              (agent) => agent !== value.agent && !botAgentInstalledOnHost(agent, model)
+            )
+          )
+        : undefined,
+    [choices, model, simpleMode, value.agent]
+  )
   const extraChoice = inherit
     ? {
         id: 'inherit',
@@ -215,26 +231,28 @@ export function BotAgentLaunchPicker({
     : undefined
   return (
     <div className="flex min-w-0 flex-col gap-1">
-      <AgentLaunchPicker
-        model={model}
-        entries={entries}
-        agent={inherit?.chosen ? (inherit.agent ?? null) : value.agent}
-        {...(inherit?.chosen
-          ? {
-              triggerLabel: inherit.label,
-              emptyLabel: inherit.label,
-              triggerDetail: inherit.detail
-            }
-          : {})}
-        draftScope={scope}
-        draftForEntry={draftForEntry}
-        disabled={disabled}
-        selectAgentOnTab
-        onOpenChange={setMenuOpen}
-        onCatalogOpen={setCatalogAgent}
-        onPick={onPick}
-        choices={extraChoice ? [extraChoice] : undefined}
-      />
+      <AgentPickerFoldedAgentsContext.Provider value={foldedAgents}>
+        <AgentLaunchPicker
+          model={model}
+          entries={entries}
+          agent={inherit?.chosen ? (inherit.agent ?? null) : value.agent}
+          {...(inherit?.chosen
+            ? {
+                triggerLabel: inherit.label,
+                emptyLabel: inherit.label,
+                triggerDetail: inherit.detail
+              }
+            : {})}
+          draftScope={scope}
+          draftForEntry={draftForEntry}
+          disabled={disabled}
+          selectAgentOnTab
+          onOpenChange={setMenuOpen}
+          onCatalogOpen={setCatalogAgent}
+          onPick={onPick}
+          choices={extraChoice ? [extraChoice] : undefined}
+        />
+      </AgentPickerFoldedAgentsContext.Provider>
       {showChatDefaultHint && !inherit && !value.launch ? (
         // Without its own model the picker shows the owner's chat default, which the bot didn't choose.
         <p className="text-xs text-muted-foreground">

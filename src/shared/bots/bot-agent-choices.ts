@@ -1,6 +1,7 @@
 // Which agents a bot can run on a host, and whether each can start; the desktop's New bot and the
 // host's own answer to a phone read it the same way.
 import {
+  agentMenuRowReady,
   agentMenuRowSupportsChat,
   type ChatUnavailableReason,
   type NewTabAgentMenuRow
@@ -73,5 +74,13 @@ export function botAgentChoices(model: BotAgentMenuModel, current?: BotAgent): B
     (agent) =>
       agent === current ||
       model.rows.some((row) => row.agent === agent && agentMenuRowSupportsChat(row))
+  )
+}
+
+/** Whether `agent` is installed on the host and runs as it is, not a chat that offers to install it. */
+export function botAgentInstalledOnHost(agent: BotAgent, model: BotAgentMenuModel): boolean {
+  return (
+    model.state === 'settled' &&
+    model.rows.some((row) => row.agent === agent && agentMenuRowReady(row))
   )
 }
